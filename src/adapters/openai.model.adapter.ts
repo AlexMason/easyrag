@@ -34,23 +34,15 @@ export class OpenAIModelAdapter extends IModelAdapter {
       throw new MissingClientException(model);
     }
 
-    const conversation = options.conversation || model.client.conversation
+    const history = options.history || { conversation: undefined, reset: false };
+    const conversation = history.conversation || model.client.conversation;
 
     let tools: Tool[] = []
 
     if (options && options.tools) {
-      tools = options.tools
+      tools = options.tools;
     } else {
       tools = model.client?.getTools() || [];
-    }
-
-    if (tools.length > 0) {
-      // TODO: Inject tools into the system prompt, or create one if the system prompt doesn't exist in messages
-      if (messages.filter(m => m.role === 'system')) {
-
-      } else {
-
-      }
     }
 
     let chatResult = await this._chatCompletion(model, messages, this.parseTools(tools));
@@ -59,7 +51,6 @@ export class OpenAIModelAdapter extends IModelAdapter {
       chatResult.choices[0].message.content === null
       && chatResult.choices[0].message.tool_calls.length > 0
     ) {
-      // TODO: Search for and call tools, add to the history,
       let toolCalls: OpenAIToolCall[] = chatResult.choices[0].message.tool_calls;
 
       let toolRunMessage: AssistantMessage = {
@@ -73,8 +64,6 @@ export class OpenAIModelAdapter extends IModelAdapter {
       for (let toolCall of toolCalls) {
         let toolCallArgs = JSON.parse(toolCall.function.arguments);
         let foundTool = tools.find(t => t.name === toolCall.function.name);
-
-        // console.log(toolCallArgs, toolCall)
 
         let toolResultMessage: ToolMessage = {
           role: 'tool',

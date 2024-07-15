@@ -7,7 +7,10 @@ export interface ModelAdapterOptions {
 }
 
 export interface ChatCompletetionInvocationOptions {
-  conversation?: Conversation
+  history?: {
+    reset: boolean,
+    conversation: Conversation
+  }
   tools?: Tool[],
   stream?: boolean,
 }

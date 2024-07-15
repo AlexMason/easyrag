@@ -1,3 +1,4 @@
+import { ModelType } from "../models/model";
 import { Registerable } from "../registerable/registerable.interface";
 
 export class MissingClientException extends Error {
@@ -6,9 +7,10 @@ export class MissingClientException extends Error {
     this.name = "MissingClientException"
   }
 }
-export class MissingToolAdapterException extends Error {
-  constructor(resource: Registerable) {
-    super(`You must provide a 'toolAdapter' to the client options if you are using tools.`);
+
+export class MissingModelException extends Error {
+  constructor(type: ModelType) {
+    super(`Register a ${type} model first.`);
     this.name = "MissingToolAdapterException"
   }
 }

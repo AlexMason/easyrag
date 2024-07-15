@@ -3,6 +3,7 @@ import { EasyRAG } from "../easyrag";
 import { MissingClientException } from "../lib/exceptions";
 import { Registerable } from "../registerable/registerable.interface";
 import { Tool } from "../tools/tools";
+import { ChatCompletetionInvocationOptions } from "./model-adapter";
 
 export type ModelOptions = {
   temperature?: number;
@@ -13,10 +14,6 @@ export type ModelOptions = {
 }
 
 export type ModelType = 'chat' | 'embedding';
-
-export type ModelInvokeOptions = {
-  tools?: Tool[];
-}
 
 export class Model extends Registerable {
   name: string;
@@ -41,7 +38,7 @@ export class Model extends Registerable {
     this.options = options;
   }
 
-  async invoke(query: string, options?: ModelInvokeOptions) {
+  async invoke(query: string, options?: ChatCompletetionInvocationOptions) {
     if (this.client === undefined) {
       throw new MissingClientException(this);
     }
@@ -60,13 +57,20 @@ export class Model extends Registerable {
       tools = this.client.getTools();
     }
 
+    if (tools.length > 0) {
+      options = {
+        ...options
+      };
+      options.tools = tools;
+    }
+
     // invoke model and store response
     this.client.conversation.addMessage({
       role: 'user',
       content: query
     });
 
-    let response = await this.client.getAdapter().modelAdapter.chatCompletion(this, messages, tools.length > 0 ? { tools } : {});
+    let response = await this.client.getAdapter().modelAdapter.chatCompletion(this, messages, options);
 
     this.client.conversation.addMessage({
       ...response.choices[0].message

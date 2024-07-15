@@ -5,7 +5,9 @@
 
 import { IInferenceAdapter } from "./adapters/inference-adapter";
 import { Conversation, ConversationOptions, SystemMessage } from "./conversation/conversation";
-import { Model, ModelInvokeOptions } from "./models/model";
+import { MissingModelException } from "./lib/exceptions";
+import { Model, ModelType } from "./models/model";
+import { ChatCompletetionInvocationOptions } from "./models/model-adapter";
 import { Registerable } from "./registerable/registerable.interface";
 import { Tool } from "./tools/tools";
 
@@ -23,7 +25,7 @@ export class EasyRAG {
 
   // TODO: Replace any with the appropriate class
   private models: Model[] = [];
-  private tools: any[] = [];
+  private tools: Tool[] = [];
   private docStores: any[] = [];
 
   // Should I create a custom context class? 
@@ -37,16 +39,8 @@ export class EasyRAG {
     this.conversation = new Conversation(options?.conversation);
   }
 
-  public async query(prompt: string, options?: ModelInvokeOptions) {
-    // if tools are passed to the options, only those tools should be used for RAG 
-
-    let chatModel = this.models.find(m => m.modelType === 'chat');
-
-    if (chatModel === undefined) {
-      throw new Error('No chat model found');
-    }
-
-    return await chatModel.invoke(prompt, options);
+  public async query(prompt: string, options?: ChatCompletetionInvocationOptions) {
+    return await this.getModel('chat').invoke(prompt, options);
   }
 
   getTools() {
@@ -57,11 +51,21 @@ export class EasyRAG {
     return this.adapter;
   }
 
+  getModel(type: ModelType, name?: string) {
+    const model = this.models.find(m => (name === undefined) ? m.modelType === type : m.name === name);
+
+    if (model === undefined) {
+      throw new MissingModelException(type);
+    }
+
+    return model;
+  }
+
   public register(resource: Registerable): void {
     resource.register(this);
 
     if (resource.type === 'tool') {
-      this.tools.push(resource);
+      this.tools.push(resource as Tool);
     } else if (resource.type === 'docstore') {
       this.docStores.push(resource)
     } else if (resource.type === 'model') {
@@ -74,7 +78,7 @@ export class EasyRAG {
     resource.unregister();
 
     if (resource.type === 'tool') {
-      this.tools.splice(this.tools.indexOf(resource), 1);
+      this.tools.splice(this.tools.indexOf(resource as Tool), 1);
     } else if (resource.type === 'docstore') {
       this.docStores.splice(this.docStores.indexOf(resource), 1);
     } else if (resource.type === 'model') {

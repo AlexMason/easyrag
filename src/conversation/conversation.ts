@@ -51,11 +51,7 @@ export class Conversation {
       this.messages = options.defaultMessages;
     }
 
-    let foundMessage = this.messages.find(m => m.role === 'system');
-
-    if (foundMessage === undefined) {
-      this.messages.splice(0, 0, { role: 'system', content: 'You are a helpful AI assistant.' })
-    }
+    this.getSystemMessage();
   }
 
   getMessages() {
@@ -86,5 +82,22 @@ export class Conversation {
     } else {
       this.messages = [];
     }
+  }
+
+  private getSystemMessage(): SystemMessage {
+    let foundMessage = this.messages.find(m => m.role === 'system');
+
+    if (foundMessage === undefined) {
+      this.messages.splice(0, 0, { role: 'system', content: 'You are a helpful AI assistant.' })
+      return this.messages[0] as SystemMessage;
+    }
+
+    return foundMessage;
+  }
+
+  appendToSystem(message: string) {
+    let sysMessage = this.getSystemMessage();
+    sysMessage.content = sysMessage.content.concat(message);
+    return sysMessage;
   }
 }

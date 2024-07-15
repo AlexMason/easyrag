@@ -22,14 +22,16 @@ I created this library as an alternative to existing tools due to increasing fru
 
 I am committed to releasing the following features:
 
-- [x] Chat Completion Adapter
+- [x] Model Adapter
+  - [x] Chat completion
   - [x] Hot swap tools
+  - [x] Support for parameters (temperature, top_p, etc.)
   - [ ] Hot swap conversation
-  - [ ] Support for parameters (temperature, top_p, etc.)
+  - [ ] Embedding 
   - [ ] Streaming
 - [x] Conversations
 - [x] Tool Support
-- [ ] Embedding
+  - [ ] Type support for parameters
 - [ ] Document Storage
 - [ ] Out-of-the-box Adapters
   - [x] OpenAI Model Adapter
