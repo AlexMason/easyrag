@@ -1,0 +1,21 @@
+{
+  "name": "easyrag",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "tsc && node -r tsconfig-paths/register ./dist/tests/index.js",
+    "test:tools": "tsc && node -r tsconfig-paths/register ./dist/tests/tools.js",
+    "start:test": "ts-node -r tsconfig-paths/register ./tests/index.ts"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "@types/node": "^20.14.10",
+    "dotenv": "^16.4.5",
+    "ts-node": "^10.9.2",
+    "tsconfig-paths": "^4.2.0",
+    "typescript": "^5.5.3"
+  }
+}
