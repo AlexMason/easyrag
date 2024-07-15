@@ -16,8 +16,11 @@ I created this library as an alternative to the overly complicated alteratives.
 
 ## Getting Started
 
+Please note that this library is in active development, and the API is not mature enough to be considered stable. I have not published any NPM packages yet. If you are interested in using this library, you will need to install from source.
+
 ## Documentation
 
 ## Contribute
+Welcoming all contributions and help. Feel free to open an issue or pull request
 
 ## License

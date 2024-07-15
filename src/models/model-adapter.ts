@@ -1,5 +1,5 @@
-import { ChatMessage } from "../conversation/conversation";
-import { EasyRAG } from "../easy-rag";
+import { ChatMessage, Conversation } from "../conversation/conversation";
+import { EasyRAG } from "../easyrag";
 import { Tool } from "../tools/tools";
 import { Model } from "./model";
 
@@ -7,6 +7,7 @@ export interface ModelAdapterOptions {
 }
 
 export interface ChatCompletetionInvocationOptions {
+  conversation?: Conversation
   tools?: Tool[],
   stream?: boolean,
 }

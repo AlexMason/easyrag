@@ -5,8 +5,9 @@
 
 import { IInferenceAdapter } from "./adapters/inference-adapter";
 import { Conversation, ConversationOptions, SystemMessage } from "./conversation/conversation";
-import { Model } from "./models/model";
+import { Model, ModelInvokeOptions } from "./models/model";
 import { Registerable } from "./registerable/registerable.interface";
+import { Tool } from "./tools/tools";
 
 // default models, tools,
 export type EasyRAGOptions = {
@@ -14,16 +15,6 @@ export type EasyRAGOptions = {
   tools?: any[];
   docStores?: any[];
   conversation?: ConversationOptions;
-}
-
-// options for tailoring how the prompt behaves
-export type EasyRAGQueryOptions = {
-  docstores?: any[],
-  tools?: [],
-
-  // Query context is provided by the user and
-  // should be inferred from a generic class type
-  context?: any;
 }
 
 export class EasyRAG {
@@ -46,8 +37,8 @@ export class EasyRAG {
     this.conversation = new Conversation(options?.conversation);
   }
 
-  public async query(prompt: string, options?: EasyRAGQueryOptions) {
-    // if tools are passed to the options, only those tools should be used for DAG 
+  public async query(prompt: string, options?: ModelInvokeOptions) {
+    // if tools are passed to the options, only those tools should be used for RAG 
 
     let chatModel = this.models.find(m => m.modelType === 'chat');
 
@@ -55,7 +46,7 @@ export class EasyRAG {
       throw new Error('No chat model found');
     }
 
-    return await chatModel.invoke(prompt);
+    return await chatModel.invoke(prompt, options);
   }
 
   getTools() {

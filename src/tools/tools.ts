@@ -1,4 +1,4 @@
-import { EasyRAG } from "../easy-rag";
+import { EasyRAG } from "../easyrag";
 import { MissingClientException, MissingToolAdapterException } from "../lib/exceptions";
 import { Registerable } from "../registerable/registerable.interface";
 

@@ -34,6 +34,8 @@ export class OpenAIModelAdapter extends IModelAdapter {
       throw new MissingClientException(model);
     }
 
+    const conversation = options.conversation || model.client.conversation
+
     let tools: Tool[] = []
 
     if (options && options.tools) {
@@ -47,14 +49,11 @@ export class OpenAIModelAdapter extends IModelAdapter {
       if (messages.filter(m => m.role === 'system')) {
 
       } else {
-        
+
       }
     }
 
     let chatResult = await this._chatCompletion(model, messages, this.parseTools(tools));
-
-    // console.log("chatResult", chatResult);
-    // console.log("messages", JSON.stringify(messages, null, 2))
 
     if (
       chatResult.choices[0].message.content === null
@@ -68,26 +67,31 @@ export class OpenAIModelAdapter extends IModelAdapter {
         tool_calls: chatResult.choices[0].message.tool_calls,
       }
 
-      model.client.conversation.addMessage(toolRunMessage);
+      conversation.addMessage(toolRunMessage);
       messages.push(toolRunMessage);
 
       for (let toolCall of toolCalls) {
         let toolCallArgs = JSON.parse(toolCall.function.arguments);
         let foundTool = tools.find(t => t.name === toolCall.function.name);
 
-        if (foundTool === undefined) {
-          throw new Error(`Tool ${toolCall.function.name} not found`);
-        }
-
-        const toolResult = await foundTool.run(toolCallArgs);
+        // console.log(toolCallArgs, toolCall)
 
         let toolResultMessage: ToolMessage = {
           role: 'tool',
           tool_call_id: toolCall.id,
-          content: '' + toolResult,
+          content: '',
         }
 
-        model.client.conversation.addMessage(toolResultMessage);
+        if (foundTool === undefined) {
+          toolResultMessage.content = `Tool "${toolCall.function.name}" not found.`;
+        } else {
+          const toolResult = await foundTool.run(toolCallArgs);
+
+          toolResultMessage.content = toolResult;
+        }
+
+
+        conversation.addMessage(toolResultMessage);
         messages.push(toolResultMessage);
       }
 

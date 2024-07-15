@@ -1,5 +1,5 @@
 import { OpenAIModelAdapter } from "../src/adapters/openai.model.adapter";
-import { EasyRAG } from "../src/easy-rag";
+import { EasyRAG } from "../src/easyrag";
 import { Model } from "../src/models/model";
 
 

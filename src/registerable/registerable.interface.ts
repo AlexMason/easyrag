@@ -1,4 +1,4 @@
-import { EasyRAG } from "../easy-rag";
+import { EasyRAG } from "../easyrag";
 
 
 // When register is called in easy rag,

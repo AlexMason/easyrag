@@ -1,5 +1,5 @@
 import { ChatMessage } from "../conversation/conversation";
-import { EasyRAG } from "../easy-rag";
+import { EasyRAG } from "../easyrag";
 import { MissingClientException } from "../lib/exceptions";
 import { Registerable } from "../registerable/registerable.interface";
 import { Tool } from "../tools/tools";

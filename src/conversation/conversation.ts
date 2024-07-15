@@ -36,6 +36,7 @@ export type ChatMessage = SystemMessage | AssistantMessage | UserMessage | ToolM
 
 export type ConversationOptions = {
   defaultMessages?: ChatMessage[],
+  chatHistoryLimit?: number
 }
 
 export class Conversation {
@@ -58,6 +59,20 @@ export class Conversation {
   }
 
   getMessages() {
+    let tmpMessages = this.messages;
+
+    if (this.options && this.options.chatHistoryLimit && this.options.chatHistoryLimit > 0) {
+      let historyCount = 0;
+      tmpMessages.filter(m => {
+        if (m.role === 'user' || m.role === 'assistant' && typeof m.content === "string") {
+          historyCount++;
+        } else {
+          return true;
+        }
+        return historyCount < (this.options!.chatHistoryLimit!);
+      })
+    }
+
     return this.messages;
   }
 

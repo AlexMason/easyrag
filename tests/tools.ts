@@ -1,5 +1,5 @@
 import { OpenAIModelAdapter } from "../src/adapters/openai.model.adapter";
-import { EasyRAG } from "../src/easy-rag";
+import { EasyRAG } from "../src/easyrag";
 import { Model } from "../src/models/model";
 import { Tool } from "../src/tools/tools";
 
@@ -15,13 +15,13 @@ import "dotenv/config";
 
   const weatherTool = new Tool(
     "weather", "Looks up the weather by zip code", [
-      {
-        "name": "zipCode",
-        "description": "Zip code",
-        "type": "string",
-        "required": true
-      }
-    ],
+    {
+      "name": "zipCode",
+      "description": "Zip code",
+      "type": "string",
+      "required": true
+    }
+  ],
     (params) => {
       return Promise.resolve("It's a crisp 30f in " + params.zipCode);
     }
@@ -50,6 +50,16 @@ import "dotenv/config";
 
   // 4. Query the client
   await ragClient.query("What is the weather in zip 92021 and what is on my schedule today?");
+
+  // Only has access to the weather tool
+  await ragClient.query("What is the weather in zip 92021 and what is on my schedule today?", {
+    tools: [weatherTool]
+  });
+
+  // Only has access to the schedule tool
+  await ragClient.query("What is the weather in zip 92021 and what is on my schedule today?", {
+    tools: [scheduleTool]
+  });
 
   // 5. Get the conversation history
   console.log(
