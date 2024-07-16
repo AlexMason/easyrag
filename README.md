@@ -4,7 +4,61 @@ EasyRAG is the AI TypeScript library you wish you had when you got started.
 
 ## Getting Started
 
-Please note that this library is in active development, and the API is not yet stable. No NPM packages have been published. If you are interested in using this library, you will need to install it from source.
+```sh
+npm install --save easyrag
+```
+
+
+```js
+import EasyRAG, { OpenAIModelAdapter } from 'easyrag';
+
+// 1. Setup the model adapter, model, and any tools.
+
+const modelAdapter = new OpenAIModelAdapter({
+  apiKey: process.env.OPENAI_API_KEY
+});
+
+const chatGpt35Turbo = new Model("gpt-3.5-turbo", "chat");
+
+const weatherToolParams = [
+  {
+    "name": "zipCode",
+    "description": "Zip code",
+    "type": "string",
+    "required": true
+  }
+];
+
+const weatherTool = new Tool(
+  "weather",
+  "Looks up the weather by zip code",
+  weatherToolParams,
+  async (params) => {
+    return "It's a crisp 30f in " + params.zipCode;
+  }
+);
+
+// 2. Initalize the EasyRAG client.
+
+const ragClient = new EasyRAG({ modelAdapter });
+
+// 3. Register your models and tools
+
+ragClient.register(chatGpt35Turbo);
+ragClient.register(weatherTool);
+
+// 4. Query the client
+await ragClient.query("What is the weather in zip 92021?");
+
+// 5. Get the built-in conversation history
+console.log(
+  ragClient
+    .conversation
+    .getMessages()
+    .map(m => `${JSON.stringify(m, null, 2)}`)
+    .join('\n')
+);
+```
 
 ## Documentation
 
@@ -26,10 +80,12 @@ I am committed to releasing the following features:
   - [x] Chat completion
   - [x] Hot swap tools
   - [x] Support for parameters (temperature, top_p, etc.)
-  - [ ] Hot swap conversation
+  - [x] Hot swap conversation
   - [ ] Embedding 
   - [ ] Streaming
 - [x] Conversations
+  - [x] System prompt
+  - [x] History limit for generation context
 - [x] Tool Support
   - [ ] Type support for parameters
 - [ ] Document Storage
