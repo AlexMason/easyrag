@@ -10,7 +10,7 @@ npm install --save easyrag
 
 
 ```js
-import EasyRAG, { OpenAIModelAdapter } from 'easyrag';
+import EasyRAG, { OpenAIModelAdapter, Tool, Model } from 'easyrag';
 
 // 1. Setup the model adapter, model, and any tools.
 
