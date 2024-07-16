@@ -47,6 +47,16 @@ export class EasyRAG {
     return this.tools;
   }
 
+  getTool(toolName: string) {
+    let foundTool = this.tools.find(t => t.name === toolName);
+
+    if (foundTool === undefined) {
+      throw new Error(`Unable to find tool "${toolName}"`)
+    }
+
+    return foundTool;
+  }
+
   getAdapter() {
     return this.adapter;
   }

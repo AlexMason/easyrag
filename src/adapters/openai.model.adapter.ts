@@ -1,4 +1,5 @@
 import { AssistantMessage, ChatMessage, ToolMessage } from "../conversation/conversation";
+import { EasyRAG } from "../easyrag";
 import { MissingClientException } from "../lib/exceptions";
 import { Model, ModelOptions } from "../models/model";
 import { ChatCompletetionInvocationOptions, IModelAdapter, ModelAdapterOptions } from "../models/model-adapter";
@@ -42,7 +43,7 @@ export class OpenAIModelAdapter extends IModelAdapter {
     if (options && options.tools) {
       tools = options.tools;
     } else {
-      tools = model.client?.getTools() || [];
+      tools = model.client.getTools();
     }
 
     let chatResult = await this._chatCompletion(model, messages, this.parseTools(tools));
@@ -62,23 +63,7 @@ export class OpenAIModelAdapter extends IModelAdapter {
       messages.push(toolRunMessage);
 
       for (let toolCall of toolCalls) {
-        let toolCallArgs = JSON.parse(toolCall.function.arguments);
-        let foundTool = tools.find(t => t.name === toolCall.function.name);
-
-        let toolResultMessage: ToolMessage = {
-          role: 'tool',
-          tool_call_id: toolCall.id,
-          content: '',
-        }
-
-        if (foundTool === undefined) {
-          toolResultMessage.content = `Tool "${toolCall.function.name}" not found.`;
-        } else {
-          const toolResult = await foundTool.run(toolCallArgs);
-
-          toolResultMessage.content = toolResult;
-        }
-
+        const toolResultMessage = await this.getToolResult(toolCall, model.client);
 
         conversation.addMessage(toolResultMessage);
         messages.push(toolResultMessage);
@@ -92,6 +77,26 @@ export class OpenAIModelAdapter extends IModelAdapter {
 
   async embedding(model: Model, query: string) {
     return "";
+  }
+
+  private async getToolResult(toolCall: OpenAIToolCall, client: EasyRAG) {
+    let toolCallArgs = JSON.parse(toolCall.function.arguments);
+
+    let toolResultMessage: ToolMessage = {
+      role: 'tool',
+      tool_call_id: toolCall.id,
+      content: '',
+    }
+
+    try {
+      let foundTool = client.getTool(toolCall.function.name);
+      const toolResult = await foundTool.run(toolCallArgs);
+      toolResultMessage.content = toolResult;
+    } catch (error) {
+      toolResultMessage.content = `Tool "${toolCall.function.name}" not found.`;
+    }
+
+    return toolResultMessage;
   }
 
   // Fetch OpenAI API

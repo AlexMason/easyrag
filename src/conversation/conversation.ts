@@ -85,7 +85,7 @@ export class Conversation {
   }
 
   private getSystemMessage(): SystemMessage {
-    let foundMessage = this.messages.find(m => m.role === 'system');
+    let foundMessage = this.messages.find(m => m.role === 'system') as SystemMessage;
 
     if (foundMessage === undefined) {
       this.messages.splice(0, 0, { role: 'system', content: 'You are a helpful AI assistant.' })

@@ -1,6 +1,6 @@
 # EasyRAG.js
 
-EasyRAG is the AI library you wish you had when you got started.
+EasyRAG is the AI TypeScript library you wish you had when you got started.
 
 ## Getting Started
 

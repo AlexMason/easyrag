@@ -1,21 +1,31 @@
 {
   "name": "easyrag",
-  "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
+  "version": "0.0.6",
+  "description": "EasyRAG is the AI TypeScript library you wish you had when you got started.",
+  "main": "dist/src/index.js",
   "scripts": {
     "build": "tsc",
     "test": "tsc && node -r tsconfig-paths/register ./dist/tests/index.js",
     "test:tools": "tsc && node -r tsconfig-paths/register ./dist/tests/tools.js"
   },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
+  "keywords": [
+    "rag",
+    "openai",
+    "typescript",
+    "javascript",
+    "chat"
+  ],
+  "author": "Alexander Mason",
+  "license": "MIT",
   "devDependencies": {
     "@types/node": "^20.14.10",
     "dotenv": "^16.4.5",
     "ts-node": "^10.9.2",
     "tsconfig-paths": "^4.2.0",
     "typescript": "^5.5.3"
-  }
+  },
+  "files": [
+    "dist/**/*.js",
+    "dist/**/*.d.ts"
+  ]
 }
