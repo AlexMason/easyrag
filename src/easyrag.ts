@@ -52,6 +52,12 @@ export class EasyRAG {
     return await this.getModel('chat').invoke(prompt, invokeOptions);
   }
 
+  public async embedding(input: string | Array<string | number>) {
+    const model = this.getModel('embedding');
+
+    return await this.adapter.modelAdapter.embedding(model, input);
+  }
+
   getTools() {
     return this.tools;
   }

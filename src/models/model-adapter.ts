@@ -25,5 +25,5 @@ export abstract class IModelAdapter {
   };
 
   abstract chatCompletion(model: Model, options: ChatCompletetionInvocationOptions): Promise<Record<string, any>>;
-  abstract embedding(model: Model, input: string | Array<string | number>): Promise<string>;
+  abstract embedding(model: Model, input: string | Array<string | number>): Promise<number[]>;
 }

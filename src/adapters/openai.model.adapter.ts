@@ -69,8 +69,37 @@ export class OpenAIModelAdapter extends IModelAdapter {
 
   }
 
-  async embedding(model: Model, input: string | Array<string | number>) {
-    return "";
+  async embedding(model: Model, input: string | Array<string | number>): Promise<number[]> {
+
+    let embeddingResult = await this._embedding(model, input);
+
+    return embeddingResult.data[0].embedding as number[];
+  }
+
+  async _embedding(model: Model, input: string | Array<string | number>) {
+    if (!model.client) {
+      throw new MissingClientException(model);
+    }
+
+    let reqOptions = {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${this.apiKey}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        model: model.getModelName(),
+        input,
+      })
+    }
+
+    let response = await fetch(`${this.baseUrl}/v1/embeddings`, reqOptions);
+    let result = await response.json();
+
+    // TODO: Handle errors (40X, 50X, rate-limit, etc.)
+    // TODO: Handle expotional backoffs for retryable errors (429, 503, etc.)
+
+    return result;
   }
 
   private async getToolResult(toolCall: OpenAIToolCall, client: EasyRAG) {
