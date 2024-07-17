@@ -1,8 +1,8 @@
-import { AssistantMessage, ChatMessage, ToolMessage } from "../conversation/conversation";
+import { AssistantMessage, ToolMessage } from "../conversation/conversation";
 import { EasyRAG } from "../easyrag";
 import { MissingClientException } from "../lib/exceptions";
 import { Model, ModelOptions } from "../models/model";
-import { ChatCompletetionInvocationOptions, IModelAdapter, ModelAdapterOptions } from "../models/model-adapter";
+import { ChatCompletetionInvocationOptions, EmbeddingInvocationOptions, IModelAdapter, ModelAdapterOptions } from "../models/model-adapter";
 import { Tool } from "../tools/tools";
 
 export type OpenAIModelAdapterOptions = {
@@ -37,37 +37,39 @@ export class OpenAIModelAdapter extends IModelAdapter {
 
     let chatResult = await this._chatCompletion(model, options);
 
-    if (
-      chatResult.choices[0].message.content === null
-      && chatResult.choices[0].message.tool_calls.length > 0
-    ) {
-      let toolCalls: OpenAIToolCall[] = chatResult.choices[0].message.tool_calls;
-
-      toolCalls = toolCalls.map(tc => {
-        tc.function.name = tc.function.name.replace(/[^a-zA-Z0-9_-]/g, '')
-        return tc;
-      })
-
-      let toolRunMessage: AssistantMessage = {
-        role: 'assistant',
-        tool_calls: toolCalls
-      }
-
-      options.history.conversation.addMessage(toolRunMessage);
-
-      for (let toolCall of toolCalls) {
-        const toolResultMessage = await this.getToolResult(toolCall, model.client);
-
-        options.history.conversation.addMessage(toolResultMessage);
-      }
-
-      return await this.chatCompletion(model, options);
+    if (typeof chatResult.choices[0].message.content === "string") {
+      return chatResult;
     }
 
-    return chatResult;
+    if (!chatResult.choices[0].message.tool_calls) {
+      throw new Error("No content and no tool calls... please open an issue and tell me how you triggered this error.")
+    }
+
+    let toolCalls: OpenAIToolCall[] = chatResult.choices[0].message.tool_calls;
+
+    toolCalls = toolCalls.map(tc => {
+      tc.function.name = tc.function.name.replace(/[^a-zA-Z0-9_-]/g, '')
+      return tc;
+    })
+
+    let toolRunMessage: AssistantMessage = {
+      role: 'assistant',
+      tool_calls: toolCalls
+    }
+
+    options.history.conversation.addMessage(toolRunMessage);
+
+    for (let toolCall of toolCalls) {
+      const toolResultMessage = await this.getToolResult(toolCall, model.client);
+
+      options.history.conversation.addMessage(toolResultMessage);
+    }
+
+    return await this.chatCompletion(model, options);
+
   }
 
-  async embedding(model: Model, query: string) {
+  async embedding(model: Model, query: string, options: EmbeddingInvocationOptions) {
     return "";
   }
 
