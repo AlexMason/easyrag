@@ -2,7 +2,7 @@ import { AssistantMessage, ToolMessage } from "../conversation/conversation";
 import { EasyRAG } from "../easyrag";
 import { MissingClientException } from "../lib/exceptions";
 import { Model, ModelOptions } from "../models/model";
-import { ChatCompletetionInvocationOptions, EmbeddingInvocationOptions, IModelAdapter, ModelAdapterOptions } from "../models/model-adapter";
+import { ChatCompletetionInvocationOptions, IModelAdapter, ModelAdapterOptions } from "../models/model-adapter";
 import { Tool } from "../tools/tools";
 
 export type OpenAIModelAdapterOptions = {
@@ -69,7 +69,7 @@ export class OpenAIModelAdapter extends IModelAdapter {
 
   }
 
-  async embedding(model: Model, query: string, options: EmbeddingInvocationOptions) {
+  async embedding(model: Model, input: string | Array<string | number>) {
     return "";
   }
 
