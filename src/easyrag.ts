@@ -39,8 +39,17 @@ export class EasyRAG {
     this.conversation = new Conversation(options?.conversation);
   }
 
-  public async query(prompt: string, options?: ChatCompletetionInvocationOptions) {
-    return await this.getModel('chat').invoke(prompt, options);
+  public async query(prompt: string, options?: Partial<ChatCompletetionInvocationOptions>) {
+
+    const invokeOptions = {
+      ...options,
+      history: {
+        ...options?.history,
+        conversation: options?.history?.conversation || this.conversation
+      }
+    };
+
+    return await this.getModel('chat').invoke(prompt, invokeOptions);
   }
 
   getTools() {

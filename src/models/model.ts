@@ -1,3 +1,4 @@
+import { Conversation } from "../conversation/conversation";
 import { EasyRAG } from "../easyrag";
 import { MissingClientException } from "../lib/exceptions";
 import { Registerable } from "../registerable/registerable.interface";
@@ -36,20 +37,20 @@ export class Model extends Registerable {
     this.options = options;
   }
 
-  async invoke(query: string, options?: ChatCompletetionInvocationOptions) {
+  async invoke(query: string, options: ChatCompletetionInvocationOptions) {
     if (this.client === undefined) {
       throw new MissingClientException(this);
     }
 
     // invoke model and store response
-    this.client.conversation.addMessage({
+    options.history.conversation.addMessage({
       role: 'user',
       content: query
     });
 
-    let response = await this.client.getAdapter().modelAdapter.chatCompletion(this, options || {});
+    let response = await this.client.getAdapter().modelAdapter.chatCompletion(this, options);
 
-    this.client.conversation.addMessage({
+    options.history.conversation.addMessage({
       ...response.choices[0].message
     })
 

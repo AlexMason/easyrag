@@ -6,7 +6,8 @@
   "scripts": {
     "build": "tsc",
     "test": "tsc && node -r tsconfig-paths/register ./dist/tests/index.js",
-    "test:tools": "tsc && node -r tsconfig-paths/register ./dist/tests/tools.js"
+    "test:tools": "tsc && node -r tsconfig-paths/register ./dist/tests/tools.js",
+    "test:conversation": "tsc && node -r tsconfig-paths/register ./dist/tests/conversation.js"
   },
   "keywords": [
     "rag",

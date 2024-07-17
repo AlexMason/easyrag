@@ -3,7 +3,7 @@ import { EasyRAG } from "../easyrag";
 import { MissingClientException } from "../lib/exceptions";
 import { Model, ModelOptions } from "../models/model";
 import { ChatCompletetionInvocationOptions, IModelAdapter, ModelAdapterOptions } from "../models/model-adapter";
-import { Tool, ToolParameter } from "../tools/tools";
+import { Tool } from "../tools/tools";
 
 export type OpenAIModelAdapterOptions = {
   apiKey: string;
@@ -35,9 +35,6 @@ export class OpenAIModelAdapter extends IModelAdapter {
       throw new MissingClientException(model);
     }
 
-    const history = options.history || { conversation: undefined, reset: false };
-    const conversation = history.conversation || model.client.conversation;
-
     let chatResult = await this._chatCompletion(model, options);
 
     if (
@@ -56,12 +53,12 @@ export class OpenAIModelAdapter extends IModelAdapter {
         tool_calls: toolCalls
       }
 
-      conversation.addMessage(toolRunMessage);
+      options.history.conversation.addMessage(toolRunMessage);
 
       for (let toolCall of toolCalls) {
         const toolResultMessage = await this.getToolResult(toolCall, model.client);
 
-        conversation.addMessage(toolResultMessage);
+        options.history.conversation.addMessage(toolResultMessage);
       }
 
       return await this.chatCompletion(model, options);
@@ -96,15 +93,15 @@ export class OpenAIModelAdapter extends IModelAdapter {
 
   // Fetch OpenAI API
   private async _chatCompletion(model: Model, options: ChatCompletetionInvocationOptions) {
+    if (!model.client) {
+      throw new MissingClientException(model);
+    }
 
     let fetchOptions: any = {};
 
     if (options.tools && options.tools.length > 0) {
       fetchOptions.tools = this.parseTools(options.tools);
-    } else {
-      if (!model.client) {
-        throw new MissingClientException(model);
-      }
+    } else if (model.client.getTools().length > 0) {
       fetchOptions.tools = this.parseTools(model.client.getTools());
     }
 
@@ -116,30 +113,16 @@ export class OpenAIModelAdapter extends IModelAdapter {
       },
       body: JSON.stringify({
         model: model.getModelName(),
-        messages: model.client?.conversation.getMessages(),
+        messages: options.history.conversation.getMessages(),
         ...fetchOptions,
         ...this.parseAIOptions(model.options)
       })
     }
 
-    let response = await fetch(`${this.baseUrl}/v1/chat/completions`, {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${this.apiKey}`,
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({
-        model: model.getModelName(),
-        messages: model.client?.conversation.getMessages(),
-        ...fetchOptions,
-        ...this.parseAIOptions(model.options)
-      })
-    });
-
+    let response = await fetch(`${this.baseUrl}/v1/chat/completions`, reqOptions);
     let result = await response.json();
 
     // TODO: Handle errors (40X, 50X, rate-limit, etc.)
-
     // TODO: Handle expotional backoffs for retryable errors (429, 503, etc.)
 
     return result;
