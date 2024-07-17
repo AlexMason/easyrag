@@ -77,21 +77,22 @@ I created this library as an alternative to existing tools due to increasing fru
 I am committed to releasing the following features:
 
 - [x] Model Adapter
-  - [x] Chat completion
-  - [x] Hot swap tools
   - [x] Support for parameters (temperature, top_p, etc.)
-  - [x] Hot swap conversation
-  - [ ] Embedding 
+  - [x] Chat completion
+  - [x] Embedding
+  - [x] Hot swap tools
   - [ ] Streaming
-- [x] Conversations
+- [x] Conversation
+  - [x] Hot swap conversation
   - [x] System prompt
   - [x] History limit for generation context
 - [x] Tool Support
   - [ ] Type support for parameters
-- [ ] Document Storage
+- [ ] Document Storage Adapter
 - [ ] Out-of-the-box Adapters
   - [x] OpenAI Model Adapter
   - [ ] Ollama Model Adapter
+- [ ] Better testing
 
 ## Contributing
 

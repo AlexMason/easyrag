@@ -1,6 +1,6 @@
 {
   "name": "easyrag",
-  "version": "0.0.6",
+  "version": "0.0.7",
   "description": "EasyRAG is the AI TypeScript library you wish you had when you got started.",
   "main": "dist/src/index.js",
   "scripts": {
