@@ -9,7 +9,7 @@ import { MissingModelException } from "./lib/exceptions";
 import { Model, ModelType } from "./models/model";
 import { ChatCompletetionInvocationOptions } from "./models/model-adapter";
 import { Registerable } from "./registerable/registerable.interface";
-import { Tool } from "./tools/tools";
+import { Tool, ToolParameter } from "./tools/tools";
 
 // default models, tools,
 export type EasyRAGOptions = {

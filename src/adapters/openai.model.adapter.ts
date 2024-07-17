@@ -3,7 +3,7 @@ import { EasyRAG } from "../easyrag";
 import { MissingClientException } from "../lib/exceptions";
 import { Model, ModelOptions } from "../models/model";
 import { ChatCompletetionInvocationOptions, IModelAdapter, ModelAdapterOptions } from "../models/model-adapter";
-import { Tool } from "../tools/tools";
+import { Tool, ToolParameter } from "../tools/tools";
 
 export type OpenAIModelAdapterOptions = {
   apiKey: string;
@@ -30,7 +30,7 @@ export class OpenAIModelAdapter extends IModelAdapter {
     this.baseUrl = options.baseUrl || "https://api.openai.com";
   }
 
-  async chatCompletion(model: Model, messages: ChatMessage[], options: ChatCompletetionInvocationOptions): Promise<any> {
+  async chatCompletion(model: Model, options: ChatCompletetionInvocationOptions): Promise<any> {
     if (model.client === undefined) {
       throw new MissingClientException(model);
     }
@@ -38,15 +38,7 @@ export class OpenAIModelAdapter extends IModelAdapter {
     const history = options.history || { conversation: undefined, reset: false };
     const conversation = history.conversation || model.client.conversation;
 
-    let tools: Tool[] = []
-
-    if (options && options.tools) {
-      tools = options.tools;
-    } else {
-      tools = model.client.getTools();
-    }
-
-    let chatResult = await this._chatCompletion(model, messages, this.parseTools(tools));
+    let chatResult = await this._chatCompletion(model, options);
 
     if (
       chatResult.choices[0].message.content === null
@@ -54,22 +46,25 @@ export class OpenAIModelAdapter extends IModelAdapter {
     ) {
       let toolCalls: OpenAIToolCall[] = chatResult.choices[0].message.tool_calls;
 
+      toolCalls = toolCalls.map(tc => {
+        tc.function.name = tc.function.name.replace(/[^a-zA-Z0-9_-]/g, '')
+        return tc;
+      })
+
       let toolRunMessage: AssistantMessage = {
         role: 'assistant',
-        tool_calls: chatResult.choices[0].message.tool_calls,
+        tool_calls: toolCalls
       }
 
       conversation.addMessage(toolRunMessage);
-      messages.push(toolRunMessage);
 
       for (let toolCall of toolCalls) {
         const toolResultMessage = await this.getToolResult(toolCall, model.client);
 
         conversation.addMessage(toolResultMessage);
-        messages.push(toolResultMessage);
       }
 
-      return await this.chatCompletion(model, messages, options);
+      return await this.chatCompletion(model, options);
     }
 
     return chatResult;
@@ -100,12 +95,31 @@ export class OpenAIModelAdapter extends IModelAdapter {
   }
 
   // Fetch OpenAI API
-  private async _chatCompletion(model: Model, messages: ChatMessage[], tools: ReturnType<typeof this.parseTools> = []) {
+  private async _chatCompletion(model: Model, options: ChatCompletetionInvocationOptions) {
 
     let fetchOptions: any = {};
 
-    if (tools.length > 0) {
-      fetchOptions.tools = tools;
+    if (options.tools && options.tools.length > 0) {
+      fetchOptions.tools = this.parseTools(options.tools);
+    } else {
+      if (!model.client) {
+        throw new MissingClientException(model);
+      }
+      fetchOptions.tools = this.parseTools(model.client.getTools());
+    }
+
+    let reqOptions = {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${this.apiKey}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        model: model.getModelName(),
+        messages: model.client?.conversation.getMessages(),
+        ...fetchOptions,
+        ...this.parseAIOptions(model.options)
+      })
     }
 
     let response = await fetch(`${this.baseUrl}/v1/chat/completions`, {
@@ -116,7 +130,7 @@ export class OpenAIModelAdapter extends IModelAdapter {
       },
       body: JSON.stringify({
         model: model.getModelName(),
-        messages: messages,
+        messages: model.client?.conversation.getMessages(),
         ...fetchOptions,
         ...this.parseAIOptions(model.options)
       })

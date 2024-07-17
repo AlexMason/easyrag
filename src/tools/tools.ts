@@ -2,13 +2,14 @@ import { EasyRAG } from "../easyrag";
 import { MissingClientException } from "../lib/exceptions";
 import { Registerable } from "../registerable/registerable.interface";
 
-export type ToolParamater = {
-  "name": string,
-  "description": string,
-  "type": "string" | "integer" | "boolean",
-  "enum"?: string[],
-  "required"?: boolean
+export type ToolParameter = {
+  name: string;
+  description: string;
+  type: "string" | "integer" | "boolean";
+  enum?: string[];
+  required?: boolean;
 };
+
 
 export class Tool extends Registerable {
   name: string;
@@ -19,9 +20,9 @@ export class Tool extends Registerable {
   constructor(
     name: string,
     description: string,
-    private parameters: ToolParamater[],
+    private parameters: ToolParameter[],
     private cb: (
-      parameters: Record<string, string | number | boolean>,
+      parameters: Record<string, any>,
       client: EasyRAG
     ) => Promise<string>
   ) {
@@ -30,11 +31,11 @@ export class Tool extends Registerable {
     this.description = description;
   }
 
-  getParameters(): ToolParamater[] {
+  getParameters(): ToolParameter[] {
     return this.parameters;
   }
 
-  async run(parameters: Record<string, string | number | boolean>): Promise<string> {
+  async run(parameters: ToolParameter[]): Promise<string> {
     if (this.client === undefined) {
       throw new MissingClientException(this);
     }

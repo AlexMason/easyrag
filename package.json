@@ -13,7 +13,11 @@
     "openai",
     "typescript",
     "javascript",
-    "chat"
+    "chat",
+    "ai",
+    "llm",
+    "agent",
+    "tool"
   ],
   "author": "Alexander Mason",
   "license": "MIT",
@@ -26,6 +30,7 @@
   },
   "files": [
     "dist/**/*.js",
-    "dist/**/*.d.ts"
+    "dist/**/*.d.ts",
+    "LICENSE"
   ]
 }

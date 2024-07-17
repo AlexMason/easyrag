@@ -29,8 +29,8 @@ import "dotenv/config";
 
   const scheduleTool = new Tool(
     "schedule", "Looks up items on my daily planner", [],
-    () => {
-      return Promise.resolve("Bird watching, take out trash, paint the garage");
+    async () => {
+      return "Bird watching, take out trash, paint the garage";
     }
   )
 
@@ -49,12 +49,12 @@ import "dotenv/config";
   ragClient.register(scheduleTool);
 
   // 4. Query the client
-  await ragClient.query("What is the weather in zip 92021 and what is on my schedule today?");
+  // await ragClient.query("What is the weather in zip 92021 and what is on my schedule today?");
 
   // Only has access to the weather tool
-  await ragClient.query("What is the weather in zip 92021 and what is on my schedule today?", {
-    tools: [weatherTool]
-  });
+  // await ragClient.query("What is the weather in zip 92021 and what is on my schedule today?", {
+  //   tools: [weatherTool]
+  // });
 
   // Only has access to the schedule tool
   await ragClient.query("What is the weather in zip 92021 and what is on my schedule today?", {

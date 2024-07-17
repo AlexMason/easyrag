@@ -1,8 +1,6 @@
-import { ChatMessage } from "../conversation/conversation";
 import { EasyRAG } from "../easyrag";
 import { MissingClientException } from "../lib/exceptions";
 import { Registerable } from "../registerable/registerable.interface";
-import { Tool } from "../tools/tools";
 import { ChatCompletetionInvocationOptions } from "./model-adapter";
 
 export type ModelOptions = {
@@ -43,34 +41,13 @@ export class Model extends Registerable {
       throw new MissingClientException(this);
     }
 
-    // get conversation history, tools, docstores, etc...
-    let messages: ChatMessage[] = [
-      ...this.client.conversation.getMessages(),
-      { role: 'user', content: query }
-    ];
-
-    let tools: Tool[] = [];
-
-    if (options && options.tools && options.tools.length > 0) {
-      tools = options.tools;
-    } else {
-      tools = this.client.getTools();
-    }
-
-    if (tools.length > 0) {
-      options = {
-        ...options
-      };
-      options.tools = tools;
-    }
-
     // invoke model and store response
     this.client.conversation.addMessage({
       role: 'user',
       content: query
     });
 
-    let response = await this.client.getAdapter().modelAdapter.chatCompletion(this, messages, options);
+    let response = await this.client.getAdapter().modelAdapter.chatCompletion(this, options || {});
 
     this.client.conversation.addMessage({
       ...response.choices[0].message
