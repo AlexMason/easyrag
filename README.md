@@ -93,11 +93,14 @@ I am committed to releasing the following features:
   - [ ] Search nearest K
 - [ ] Out-of-the-box Adapters
   - [x] OpenAI Model Adapter
-    - [x] Images (base64)
-  - [ ] Ollama Model Adapter
     - [x] Chat
     - [x] Embeddings
-    - [x] Images (base64)
+    - [x] Tool Support
+    - [ ] Images (base64)
+  - [ ] Ollama Model Adapter
+    - [x] Chat
+    - [ ] Embeddings
+    - [ ] Images (base64)
     - [ ] Tool Support
   - [ ] PGVector Document Storage Adapter
 - [ ] Improved Documentation

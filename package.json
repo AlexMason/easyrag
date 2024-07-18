@@ -8,7 +8,8 @@
     "test": "tsc && node -r tsconfig-paths/register ./dist/tests/index.js",
     "test:tools": "tsc && node -r tsconfig-paths/register ./dist/tests/tools.js",
     "test:conversation": "tsc && node -r tsconfig-paths/register ./dist/tests/conversation.js",
-    "test:embedding": "tsc && node -r tsconfig-paths/register ./dist/tests/embedding.js"
+    "test:embedding": "tsc && node -r tsconfig-paths/register ./dist/tests/embedding.js",
+    "test:ollama": "tsc && node -r tsconfig-paths/register ./dist/tests/ollama.js"
   },
   "keywords": [
     "rag",
