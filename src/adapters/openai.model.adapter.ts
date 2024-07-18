@@ -35,7 +35,7 @@ export class OpenAIModelAdapter extends IModelAdapter {
       throw new MissingClientException(options.model);
     }
 
-    let chatResult = await this._chatCompletion(options.model, options);
+    let chatResult = await this._chatCompletion(options);
 
     if (typeof chatResult.choices[0].message.content === "string") {
       return chatResult;
@@ -123,17 +123,17 @@ export class OpenAIModelAdapter extends IModelAdapter {
   }
 
   // Fetch OpenAI API
-  private async _chatCompletion(model: Model, options: ChatCompletetionInvocationOptions) {
-    if (!model.client) {
-      throw new MissingClientException(model);
+  private async _chatCompletion(options: ChatCompletetionInvocationOptions) {
+    if (!options.model.client) {
+      throw new MissingClientException(options.model);
     }
 
     let fetchOptions: any = {};
 
     if (options.tools && options.tools.length > 0) {
       fetchOptions.tools = this.parseTools(options.tools);
-    } else if (model.client.getTools().length > 0) {
-      fetchOptions.tools = this.parseTools(model.client.getTools());
+    } else if (options.model.client.getTools().length > 0) {
+      fetchOptions.tools = this.parseTools(options.model.client.getTools());
     }
 
     let reqOptions = {
@@ -143,10 +143,10 @@ export class OpenAIModelAdapter extends IModelAdapter {
         'Content-Type': 'application/json'
       },
       body: JSON.stringify({
-        model: model.getModelName(),
+        model: options.model.getModelName(),
         messages: options.history.conversation.getMessages(),
         ...fetchOptions,
-        ...this.parseAIOptions(model.options)
+        ...this.parseAIOptions(options.model.options)
       })
     }
 
