@@ -12,24 +12,16 @@ import "dotenv/config";
     apiKey: process.env.OPENAI_API_KEY || "",
   });
 
-  const myModel = new Model("gpt-3.5-turbo", "chat");
   const embeddingModel = new Model("text-embedding-3-small", "embedding");
 
   // 2. Initialize the client
-  const ragClient = new EasyRAG({ modelAdapter }, {
-    conversation: {
-      defaultMessages: [
-        { role: 'system', content: 'You are an AI assistant.' }
-      ]
-    }
-  });
-
+  const ragClient = new EasyRAG({ modelAdapter });
 
   // 3. Initialize the models
-  ragClient.register(myModel);
   ragClient.register(embeddingModel);
 
   // 4. Query the client
-  await ragClient.embedding('Hello world!');
+  let res = await ragClient.embedding('Hello world!');
 
+  console.log(res)
 })();
