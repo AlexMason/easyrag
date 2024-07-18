@@ -13,17 +13,16 @@ export interface ChatCompletetionInvocationOptions {
   },
   tools?: Tool[],
   stream?: boolean,
-  model?: Model
+  model: Model
 }
 
 export abstract class IModelAdapter {
   protected options;
-  protected client: EasyRAG | undefined;
 
   constructor(options: ModelAdapterOptions) {
     this.options = options;
   };
 
-  abstract chatCompletion(model: Model, options: ChatCompletetionInvocationOptions): Promise<Record<string, any>>;
+  abstract chatCompletion(options: ChatCompletetionInvocationOptions): Promise<Record<string, any>>;
   abstract embedding(model: Model, input: string | Array<string | number>): Promise<number[]>;
 }

@@ -37,26 +37,6 @@ export class Model extends Registerable {
     this.options = options;
   }
 
-  async invoke(query: string, options: ChatCompletetionInvocationOptions) {
-    if (this.client === undefined) {
-      throw new MissingClientException(this);
-    }
-
-    // invoke model and store response
-    options.history.conversation.addMessage({
-      role: 'user',
-      content: query
-    });
-
-    let response = await this.client.getAdapter().modelAdapter.chatCompletion(this, options);
-
-    options.history.conversation.addMessage({
-      ...response.choices[0].message
-    })
-
-    return response.choices[0].message.content;
-  }
-
   getModelName() {
     return this.modelName;
   }

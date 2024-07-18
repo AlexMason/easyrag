@@ -30,12 +30,12 @@ export class OpenAIModelAdapter extends IModelAdapter {
     this.baseUrl = options.baseUrl || "https://api.openai.com";
   }
 
-  async chatCompletion(model: Model, options: ChatCompletetionInvocationOptions): Promise<any> {
-    if (model.client === undefined) {
-      throw new MissingClientException(model);
+  async chatCompletion(options: ChatCompletetionInvocationOptions): Promise<any> {
+    if (options.model.client === undefined) {
+      throw new MissingClientException(options.model);
     }
 
-    let chatResult = await this._chatCompletion(model, options);
+    let chatResult = await this._chatCompletion(options.model, options);
 
     if (typeof chatResult.choices[0].message.content === "string") {
       return chatResult;
@@ -60,12 +60,12 @@ export class OpenAIModelAdapter extends IModelAdapter {
     options.history.conversation.addMessage(toolRunMessage);
 
     for (let toolCall of toolCalls) {
-      const toolResultMessage = await this.getToolResult(toolCall, model.client);
+      const toolResultMessage = await this.getToolResult(toolCall, options.model.client);
 
       options.history.conversation.addMessage(toolResultMessage);
     }
 
-    return await this.chatCompletion(model, options);
+    return await this.chatCompletion(options);
 
   }
 
