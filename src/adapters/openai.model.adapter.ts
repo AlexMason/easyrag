@@ -132,7 +132,7 @@ export class OpenAIModelAdapter extends IModelAdapter {
 
     if (options.tools && options.tools.length > 0) {
       fetchOptions.tools = this.parseTools(options.tools);
-    } else if (options.model.client.getTools().length > 0) {
+    } else if (options.tools === undefined && options.model.client.getTools().length > 0) {
       fetchOptions.tools = this.parseTools(options.model.client.getTools());
     }
 

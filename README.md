@@ -80,23 +80,34 @@ I am committed to releasing the following features:
   - [x] Support for parameters (temperature, top_p, etc.)
   - [x] Chat completion
   - [x] Embedding
-  - [x] Hot swap tools
   - [ ] Streaming
 - [x] Conversation
   - [x] Hot swap conversation
+  - [x] Hot swap tools
+  - [x] Hot swap models
   - [x] System prompt
   - [x] History limit for generation context
 - [x] Tool Support
   - [ ] Type support for parameters
 - [ ] Document Storage Adapter
+  - [ ] Search nearest K
 - [ ] Out-of-the-box Adapters
   - [x] OpenAI Model Adapter
+    - [x] Images (base64)
   - [ ] Ollama Model Adapter
+    - [x] Chat
+    - [x] Embeddings
+    - [x] Images (base64)
+    - [ ] Tool Support
+  - [ ] PGVector Document Storage Adapter
+- [ ] Improved Documentation
+  - [ ] Official docs/wiki
+  - [ ] Documented code with descriptions + hints
 - [ ] Better testing
 
 ## Contributing
 
-Contributions are welcome! Feel free to open an issue or pull request.
+Contributions and suggestions for improvement are welcome! Feel free to open an issue or pull request.
 
 ## License
 

@@ -39,17 +39,17 @@ export class EasyRAG {
     this.conversation = new Conversation(options?.conversation);
   }
 
-  public async query(prompt: string, options?: Partial<ChatCompletetionInvocationOptions>) {
+  public async query(prompt: string, options?: Partial<ChatCompletetionInvocationOptions>): Promise<string> {
     const invokeOptions = {
       ...options,
       model: options?.model || this.getModel('chat'),
       history: {
         ...options?.history,
         conversation: options?.history?.conversation || this.conversation
-      }
+      },
+      tools: options?.tools || this.tools
     };
 
-    // invoke model and store response
     invokeOptions.history.conversation.addMessage({
       role: 'user',
       content: prompt
@@ -57,11 +57,13 @@ export class EasyRAG {
 
     let response = await this.adapter.modelAdapter.chatCompletion(invokeOptions);
 
+    let message = ((response.choices && response.choices[0].message) || response.message);
+
     invokeOptions.history.conversation.addMessage({
-      ...response.choices[0].message
+      ...message
     })
 
-    return response.choices[0].message.content;
+    return message.content;
   }
 
   public async embedding(input: string | Array<string | number>) {
