@@ -84,7 +84,7 @@ export class OpenAIModelAdapter extends IModelAdapter {
         'Content-Type': 'application/json'
       },
       body: JSON.stringify({
-        model: model.getName(),
+        model: model.name,
         input,
       })
     }
@@ -128,8 +128,6 @@ export class OpenAIModelAdapter extends IModelAdapter {
 
     if (options.tools && options.tools.length > 0) {
       fetchOptions.tools = this.parseTools(options.tools);
-    } else if (options.tools === undefined && options.model.client.getTools().length > 0) {
-      fetchOptions.tools = this.parseTools(options.model.client.getTools());
     }
 
     let reqOptions = {
@@ -139,7 +137,7 @@ export class OpenAIModelAdapter extends IModelAdapter {
         'Content-Type': 'application/json'
       },
       body: JSON.stringify({
-        model: options.model.getName(),
+        model: options.model.name,
         messages: options.history.conversation.getMessages(),
         ...fetchOptions,
         ...this.parseAIOptions(options.model.options)

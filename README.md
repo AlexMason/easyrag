@@ -108,6 +108,11 @@ I am committed to releasing the following features:
   - [ ] Documented code with descriptions + hints
 - [ ] Better testing
 
+## Ideas
+
+- Assign the model to the adapter instead of the client.
+- Swap adapter in query/embedding options
+
 ## Contributing
 
 Contributions and suggestions for improvement are welcome! Feel free to open an issue or pull request.

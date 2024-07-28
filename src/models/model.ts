@@ -36,11 +36,6 @@ export class Model extends Registerable {
 
     this.options = options;
   }
-
-  getName() {
-    return this.name;
-  }
-
   /** @internal */
   register(client: EasyRAG): void {
     this.client = client;

@@ -1,3 +1,4 @@
+import { OllamaModelAdapter } from "../src/adapters/ollama.model.adapter";
 import { OpenAIModelAdapter } from "../src/adapters/openai.model.adapter";
 import { EasyRAG } from "../src/easyrag";
 import { Model } from "../src/models/model";
@@ -7,11 +8,18 @@ import "dotenv/config";
 
 (async function () {
   // 1. Initalize the adapters, models, and tools for this client
-  const modelAdapter = new OpenAIModelAdapter({
-    apiKey: process.env.OPENAI_API_KEY || "",
+  const modelAdapter = new OllamaModelAdapter({
+    // apiKey: process.env.OPENAI_API_KEY || "",
   });
+  // const modelAdapter = new OpenAIModelAdapter({
+  //   apiKey: process.env.OPENAI_API_KEY || "",
+  // });
 
-  const myModel = new Model("gpt-3.5-turbo", "chat");
+  const myModel = new Model("llama3-groq-tool-use", "chat", {
+    temperature: 0.5,
+    topP: 0.65
+  });
+  // const myModel = new Model("gpt-3.5-turbo", "chat");
 
   const weatherTool = new Tool(
     "weather", "Looks up the weather by zip code", [
@@ -58,9 +66,9 @@ import "dotenv/config";
 
   // Only has access to the schedule tool
   await ragClient.query("What is the weather in zip 92021 and what is on my schedule today?", {
-    tools: [scheduleTool]
+    // tools: [scheduleTool]
   });
- 
+
   // 5. Get the conversation history
   console.log(
     ragClient
