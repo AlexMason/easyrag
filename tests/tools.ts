@@ -60,7 +60,7 @@ import "dotenv/config";
   await ragClient.query("What is the weather in zip 92021 and what is on my schedule today?", {
     tools: [scheduleTool]
   });
-
+ 
   // 5. Get the conversation history
   console.log(
     ragClient

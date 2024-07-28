@@ -1,6 +1,5 @@
-# EasyRAG.js
-
-EasyRAG is the AI TypeScript library you wish you had when you got started.
+# <center>EasyRAG</center>
+EasyRAG makes it simple to integrate tools and documents into your AI chats with ease. It's the typescript AI library you have been looking for!
 
 ## Getting Started
 
@@ -87,6 +86,7 @@ I am committed to releasing the following features:
   - [x] Hot swap models
   - [x] System prompt
   - [x] History limit for generation context
+  - [ ] Context - define variables for the AI to use as a "memory"
 - [x] Tool Support
   - [ ] Type support for parameters
 - [ ] Document Storage Adapter

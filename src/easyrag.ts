@@ -9,7 +9,7 @@ import { MissingModelException } from "./lib/exceptions";
 import { Model, ModelType } from "./models/model";
 import { ChatCompletetionInvocationOptions } from "./models/model-adapter";
 import { Registerable } from "./registerable/registerable.interface";
-import { Tool, ToolParameter } from "./tools/tools";
+import { Tool } from "./tools/tools";
 
 // default models, tools,
 export type EasyRAGOptions = {
@@ -20,7 +20,6 @@ export type EasyRAGOptions = {
 }
 
 export class EasyRAG {
-
   private adapter: IInferenceAdapter;
 
   // TODO: Replace any with the appropriate class
@@ -47,7 +46,8 @@ export class EasyRAG {
         ...options?.history,
         conversation: options?.history?.conversation || this.conversation
       },
-      tools: options?.tools || this.tools
+      tools: options?.tools || this.tools,
+      client: this,
     };
 
     invokeOptions.history.conversation.addMessage({
@@ -57,6 +57,7 @@ export class EasyRAG {
 
     let response = await this.adapter.modelAdapter.chatCompletion(invokeOptions);
 
+    console.log(response);
     let message = ((response.choices && response.choices[0].message) || response.message);
 
     invokeOptions.history.conversation.addMessage({

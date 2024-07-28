@@ -31,10 +31,6 @@ export class OpenAIModelAdapter extends IModelAdapter {
   }
 
   async chatCompletion(options: ChatCompletetionInvocationOptions): Promise<any> {
-    if (options.model.client === undefined) {
-      throw new MissingClientException(options.model);
-    }
-
     let chatResult = await this._chatCompletion(options);
 
     if (typeof chatResult.choices[0].message.content === "string") {
@@ -60,7 +56,7 @@ export class OpenAIModelAdapter extends IModelAdapter {
     options.history.conversation.addMessage(toolRunMessage);
 
     for (let toolCall of toolCalls) {
-      const toolResultMessage = await this.getToolResult(toolCall, options.model.client);
+      const toolResultMessage = await this.getToolResult(toolCall, options.client);
 
       options.history.conversation.addMessage(toolResultMessage);
     }
@@ -88,7 +84,7 @@ export class OpenAIModelAdapter extends IModelAdapter {
         'Content-Type': 'application/json'
       },
       body: JSON.stringify({
-        model: model.getModelName(),
+        model: model.getName(),
         input,
       })
     }
@@ -143,7 +139,7 @@ export class OpenAIModelAdapter extends IModelAdapter {
         'Content-Type': 'application/json'
       },
       body: JSON.stringify({
-        model: options.model.getModelName(),
+        model: options.model.getName(),
         messages: options.history.conversation.getMessages(),
         ...fetchOptions,
         ...this.parseAIOptions(options.model.options)

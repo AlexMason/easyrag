@@ -6,14 +6,15 @@ import { Model } from "./model";
 export interface ModelAdapterOptions {
 }
 
-export interface ChatCompletetionInvocationOptions {
+export type ChatCompletetionInvocationOptions = {
   history: {
-    reset?: boolean,
+    // reset?: boolean,
     conversation: Conversation,
   },
-  tools?: Tool[],
+  tools: Tool[],
   stream?: boolean,
-  model: Model
+  model: Model,
+  client: EasyRAG
 }
 
 export abstract class IModelAdapter {

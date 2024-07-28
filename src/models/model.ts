@@ -12,39 +12,41 @@ export type ModelOptions = {
   seed?: number;
 }
 
-export type ModelType = 'chat' | 'embedding';
+export type ModelType = 'chat' | 'embedding' | 'tool';
 
 export class Model extends Registerable {
-  name: string;
-  client: EasyRAG | undefined;
-  description?: string | undefined;
 
+  /** @internal */
   public type: 'model' = 'model';
-  private modelName: string;
+  /** @internal */
+  client: EasyRAG | undefined;
+  /** @internal */
   options: ModelOptions;
-
+  /** @internal */
   modelType: ModelType;
 
+  name: string;
+  description?: string | undefined;
 
-  constructor(modelName: string, modelType: ModelType, options: ModelOptions = {}) {
+  constructor(name: string, modelType: ModelType, options: ModelOptions = {}) {
     super();
 
-    this.name = modelName;
-
-    this.modelName = modelName;
+    this.name = name;
     this.modelType = modelType;
 
     this.options = options;
   }
 
-  getModelName() {
-    return this.modelName;
+  getName() {
+    return this.name;
   }
 
+  /** @internal */
   register(client: EasyRAG): void {
     this.client = client;
   }
 
+  /** @internal */
   unregister(): void {
     this.client = undefined;
   }

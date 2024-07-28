@@ -35,5 +35,9 @@
     "dist/**/*.js",
     "dist/**/*.d.ts",
     "LICENSE"
-  ]
+  ],
+  "dependencies": {
+    "@ctrl/golang-template": "^1.4.1",
+    "jsonschema": "^1.4.1"
+  }
 }

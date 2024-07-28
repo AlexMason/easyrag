@@ -30,6 +30,7 @@ export type ToolMessage = {
   role: 'tool';
   content: string;
   tool_call_id: string;
+  metadata?: Record<string, any>;
 };
 
 export type ChatMessage = SystemMessage | AssistantMessage | UserMessage | ToolMessage;
@@ -41,6 +42,7 @@ export type ConversationOptions = {
 
 export class Conversation {
   private options?: ConversationOptions;
+  toolNotepad: string = '';
 
   messages: ChatMessage[] = [];
 
@@ -51,16 +53,22 @@ export class Conversation {
       this.messages = options.defaultMessages;
     }
 
-    this.getSystemMessage();
+    if (this.getMessages(['system']).length === 0) {
+      this.messages.splice(0, 0, { role: 'system', content: 'You are a helpful AI assistant.' })
+    }
   }
 
-  getMessages() {
-    let tmpMessages = this.messages;
+  getMessages(filter?: ChatMessage["role"][]) {
+    let tmpMessages = this.messages.filter(m =>
+      filter !== undefined
+        ? filter.includes(m.role)
+        : true
+    );
 
     if (this.options && this.options.chatHistoryLimit && this.options.chatHistoryLimit > 0) {
       let historyCount = 0;
       tmpMessages.filter(m => {
-        if (m.role === 'user' || m.role === 'assistant' && typeof m.content === "string") {
+        if (m.role === 'user' || (m.role === 'assistant' && typeof m.content === "string")) {
           historyCount++;
         } else {
           return true;
@@ -69,11 +77,12 @@ export class Conversation {
       })
     }
 
-    return this.messages;
+    return tmpMessages;
   }
 
   addMessage(message: ChatMessage) {
     this.messages.push(message);
+    return message;
   }
 
   reset() {
@@ -82,22 +91,5 @@ export class Conversation {
     } else {
       this.messages = [];
     }
-  }
-
-  private getSystemMessage(): SystemMessage {
-    let foundMessage = this.messages.find(m => m.role === 'system') as SystemMessage;
-
-    if (foundMessage === undefined) {
-      this.messages.splice(0, 0, { role: 'system', content: 'You are a helpful AI assistant.' })
-      return this.messages[0] as SystemMessage;
-    }
-
-    return foundMessage;
-  }
-
-  appendToSystem(message: string) {
-    let sysMessage = this.getSystemMessage();
-    sysMessage.content = sysMessage.content.concat(message);
-    return sysMessage;
   }
 }
