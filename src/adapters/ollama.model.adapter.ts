@@ -46,7 +46,6 @@ export class OllamaModelAdapter extends IModelAdapter {
   }
 
   async chatCompletion(options: ChatCompletetionInvocationOptions): Promise<Record<string, any>> {
-    // console.log("options.history.conversation.getMessages()", options.history.conversation.getMessages())
     let completion = await this._fetchOllamaChatAPI(options);
 
     // console.log(completion);
@@ -60,6 +59,12 @@ export class OllamaModelAdapter extends IModelAdapter {
       && typeof completion.message.content === "string"
       && completion.message.content.length > 0
     ) {
+
+      try {
+        let tmpParse = JSON.parse(completion.message.content);
+        if (tmpParse.response) completion.message.content = tmpParse.response
+      } catch (e) { }
+
       return completion;
     }
 
@@ -92,9 +97,7 @@ export class OllamaModelAdapter extends IModelAdapter {
 
     for (let toolCall of toolCalls) {
       if (toolCall.function.name === "respond_to_user") {
-        let tmpOptions = structuredClone(options);
-
-        tmpOptions.tools = []
+        options.tools = []
 
         return await this.chatCompletion(options);
       }
@@ -122,26 +125,10 @@ export class OllamaModelAdapter extends IModelAdapter {
       body_options['format'] = "json";
       body_options['tools'] = [
         ...options.tools.map(t => this.getToolJSONSchema(t)),
-        {
-          "type": "function",
-          "function": {
-            "name": "respond_to_user",
-            "description": "A tool to provide responses.",
-            "parameters": {
-              "type": "object",
-              "properties": {
-                "response": {
-                  "type": "string",
-                  "description": "The response to be provided."
-                }
-              },
-              "required": ["response"]
-            }
-          }
-        }
+        responseToolDef
       ];
 
-      // console.log("body_options", body_options.tools)
+      // console.log("body_options", body_options)
       // TODO: Inject groq template into system.
       if (options.model.name.includes("llama3-groq-tool-use")) {
         // template
@@ -166,7 +153,7 @@ export class OllamaModelAdapter extends IModelAdapter {
       body: JSON.stringify(fetch_body)
     }
 
-    // console.log("fetch_body", fetch_body)
+    console.log("fetch_body", fetch_body)
 
     let fetch_res = await fetch(fetch_url, fetch_options);
     let fetch_json = await fetch_res.json();
@@ -234,27 +221,29 @@ export class OllamaModelAdapter extends IModelAdapter {
 
 Here are the available tools:
 <tools>
-${JSON.stringify([...tools.map(t => this.getToolJSONSchema(t)),
-    {
-      "type": "function",
-      "function": {
-        "name": "respond_to_user",
-        "description": "A tool to provide responses.",
-        "parameters": {
-          "type": "object",
-          "properties": {
-            "response": {
-              "type": "string",
-              "description": "The response to be provided."
-            }
-          },
-          "required": ["response"]
-        }
-      }
-    }])}
+${JSON.stringify([...tools.map(t => this.getToolJSONSchema(t)), responseToolDef])}
 </tools>
 
 When you are finished use the "respond_to_user" tool. Only respond in JSON if you use a tool, otherwise respond normally.
 `
   }
 }
+
+
+const responseToolDef = {
+  "type": "function",
+  "function": {
+    "name": "respond_to_user",
+    "description": "Finish using tools and respond to the user.",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "response": {
+          "type": "string",
+          "description": "The response to be provided."
+        }
+      },
+      "required": ["response"]
+    }
+  }
+};
