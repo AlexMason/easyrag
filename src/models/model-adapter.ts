@@ -4,6 +4,7 @@ import { Tool } from "../tools/tools";
 import { Model } from "./model";
 
 export interface ModelAdapterOptions {
+  
 }
 
 export type ChatCompletetionInvocationOptions = {

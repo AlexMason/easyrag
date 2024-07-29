@@ -16,8 +16,8 @@ import "dotenv/config";
   // });
 
   const myModel = new Model("llama3-groq-tool-use", "chat", {
-    temperature: 0.5,
-    topP: 0.65
+    temperature: 0.2,
+    // topP: 0.65
   });
   // const myModel = new Model("gpt-3.5-turbo", "chat");
 
@@ -48,7 +48,7 @@ import "dotenv/config";
       defaultMessages: [
         { role: 'system', content: 'You are an AI assistant.' }
       ]
-    }
+    },
   });
 
   // 3. Initialize the models
@@ -65,7 +65,7 @@ import "dotenv/config";
   // });
 
   // Only has access to the schedule tool
-  await ragClient.query("What is the weather in zip 92021 and what is on my schedule today?", {
+  let message = await ragClient.query("What is the weather in zip 92021 and what is on my schedule today?", {
     // tools: [scheduleTool]
   });
 
@@ -77,4 +77,7 @@ import "dotenv/config";
       .map(m => `${JSON.stringify(m, null, 2)}`)
       .join('\n')
   )
+
+  console.log("message", message);
+
 })();
