@@ -1,5 +1,5 @@
-import { OllamaModelAdapter } from "../src/adapters/ollama.model.adapter";
-import { OpenAIModelAdapter } from "../src/adapters/openai.model.adapter";
+import { OllamaModelAdapter } from "../src/models/ollama.model.adapter";
+import { OpenAIModelAdapter } from "../src/models/openai.model.adapter";
 import { EasyRAG } from "../src/easyrag";
 import { Model } from "../src/models/model";
 import { Tool } from "../src/tools/tools";
@@ -43,7 +43,8 @@ import "dotenv/config";
   )
 
   // 2. Initialize the client
-  const ragClient = new EasyRAG({ modelAdapter }, {
+  const ragClient = new EasyRAG({
+    modelAdapter,
     conversation: {
       defaultMessages: [
         { role: 'system', content: 'You are an AI assistant.' }
@@ -66,7 +67,7 @@ import "dotenv/config";
 
   // Only has access to the schedule tool
   let message = await ragClient.query("What is the weather in zip 92021 and what is on my schedule today?", {
-    // tools: [scheduleTool]
+    tools: [scheduleTool]
   });
 
   // 5. Get the conversation history

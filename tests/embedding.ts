@@ -1,5 +1,5 @@
 import { Conversation } from "../src";
-import { OpenAIModelAdapter } from "../src/adapters/openai.model.adapter";
+import { OpenAIModelAdapter } from "../src/models/openai.model.adapter";
 import { EasyRAG } from "../src/easyrag";
 import { Model } from "../src/models/model";
 import { Tool } from "../src/tools/tools";

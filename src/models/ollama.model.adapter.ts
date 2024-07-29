@@ -1,7 +1,8 @@
 import { AssistantMessage, SystemMessage, ToolCall, ToolMessage } from "../conversation/conversation";
 import { EasyRAG } from "../easyrag";
-import { Model, ModelOptions } from "../models/model";
-import { ChatCompletetionInvocationOptions, IModelAdapter, ModelAdapterOptions } from "../models/model-adapter"
+import { MissingClientException } from "../lib/exceptions";
+import { Model, ModelOptions } from "./model";
+import { ChatCompletetionInvocationOptions, IModelAdapter, ModelAdapterOptions } from "./model-adapter"
 import { Tool, ToolParameter } from "../tools/tools";
 import { validate } from 'jsonschema';
 
@@ -42,7 +43,35 @@ export class OllamaModelAdapter extends IModelAdapter {
   }
 
   async embedding(model: Model, input: string | Array<string | number>): Promise<number[]> {
-    return [];
+
+    let embeddingResult = await this._embedding(model, input);
+
+    return embeddingResult.embeddings[0].embedding as number[];
+  }
+
+  async _embedding(model: Model, input: string | Array<string | number>) {
+    if (!model.client) {
+      throw new MissingClientException(model);
+    }
+
+    let reqOptions = {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        model: model.name,
+        input,
+      })
+    }
+
+    let response = await fetch(`${this.baseUrl}/api/embed`, reqOptions);
+    let result = await response.json();
+
+    // TODO: Handle errors (40X, 50X, rate-limit, etc.)
+    // TODO: Handle expotional backoffs for retryable errors (429, 503, etc.)
+
+    return result;
   }
 
   async chatCompletion(options: ChatCompletetionInvocationOptions): Promise<Record<string, any>> {
@@ -57,12 +86,13 @@ export class OllamaModelAdapter extends IModelAdapter {
       && typeof completion.message.content === "string"
       && completion.message.content.length > 0
     ) {
-
       try {
         let tmpParse = JSON.parse(completion.message.content);
         if (tmpParse.response) {
+          // Primitive tool calling seems to put the actual response under a response key
           completion.message.content = tmpParse.response
         } else {
+          // If it's JSON, but it's not a response, discard it and regenerate.
           return this.chatCompletion(options);
         }
       } catch (e) { }
@@ -71,27 +101,16 @@ export class OllamaModelAdapter extends IModelAdapter {
     }
 
     if (!completion.message.tool_calls) {
+      // sometimes there is no content or tool calls :'), idk if it's only 8b models or something else. This helps mitigate that.
       return await this.chatCompletion(options);
     }
 
-    let toolCalls: ToolCall[] = (completion.message.tool_calls as OllamaToolCall[]).map((tc: OllamaToolCall) => {
-      return {
-        ...tc,
-        id: `tool_${this.generateToolID()}`
-      }
-    });
+    let toolCalls: ToolCall[] = this.convertOllamaToFormattedToolCall(completion.message.tool_calls)
 
-    toolCalls = toolCalls.map(tc => {
-      tc.function.name = tc.function.name.replace(/[^a-zA-Z0-9_-]/g, '')
-      return tc;
-    });
-
-    let toolRunMessage: AssistantMessage = {
+    options.history.conversation.addMessage({
       role: 'assistant',
       tool_calls: toolCalls
-    }
-
-    options.history.conversation.addMessage(toolRunMessage);
+    });
 
     for (let toolCall of toolCalls) {
       if (toolCall.function.name === "respond_to_user") {
@@ -145,7 +164,7 @@ export class OllamaModelAdapter extends IModelAdapter {
     let fetch_res = await fetch(fetch_url, fetch_options);
     let fetch_json = await fetch_res.json();
 
-    return fetch_json
+    return fetch_json;
   }
 
   private async getToolResult(toolCall: ToolCall, client: EasyRAG) {
@@ -194,6 +213,19 @@ export class OllamaModelAdapter extends IModelAdapter {
     };
   }
 
+  private convertOllamaToFormattedToolCall(toolCalls: OllamaToolCall[]) {
+    return toolCalls.map((tc: OllamaToolCall) => {
+      return {
+        ...tc,
+        id: `tool_${this.generateToolID()}`,
+        function: {
+          ...tc.function,
+          name: tc.function.name.replace(/[^a-zA-Z0-9_-]/g, '')
+        }
+      }
+    });
+  }
+
   private generateToolID() {
     return Array.from({ length: 15 }, () => Math.floor(Math.random() * 36).toString(36)).join('');
   }
@@ -201,7 +233,7 @@ export class OllamaModelAdapter extends IModelAdapter {
   private getToolPrompt(tools: Tool[]) {
     return `You are a helpful assistant with tool calling capabilities. When you receive a tool call response, use the output to format an answer to the orginal use question. You may use tools multiple times to recieve a correct response.
 
-Available tools:
+You can use the following tools. If the user asks you to do something that you do not have a tool for, politely inform them that you don't have the ability to perform the action they requested. Do not make up an answer.
 <tools>
   ${JSON.stringify([...tools.map(t => this.getToolJSONSchema(t)), responseToolDef])}
 </tools>

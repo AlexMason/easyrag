@@ -1,8 +1,8 @@
 import { AssistantMessage, ToolMessage } from "../conversation/conversation";
 import { EasyRAG } from "../easyrag";
 import { MissingClientException } from "../lib/exceptions";
-import { Model, ModelOptions } from "../models/model";
-import { ChatCompletetionInvocationOptions, IModelAdapter, ModelAdapterOptions } from "../models/model-adapter";
+import { Model, ModelOptions } from "./model";
+import { ChatCompletetionInvocationOptions, IModelAdapter, ModelAdapterOptions } from "./model-adapter";
 import { Tool } from "../tools/tools";
 
 export type OpenAIModelAdapterOptions = {

@@ -1,7 +1,7 @@
 // No tools
 
 import EasyRAG, { Model, Tool } from "../src";
-import { OllamaModelAdapter } from "../src/adapters/ollama.model.adapter";
+import { OllamaModelAdapter } from "../src/models/ollama.model.adapter";
 
 (async function () {
 

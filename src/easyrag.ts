@@ -2,12 +2,10 @@
 
 
 // export options for controlling easy rag.
-
-import { IInferenceAdapter } from "./adapters/inference-adapter";
 import { Conversation, ConversationOptions, SystemMessage } from "./conversation/conversation";
 import { MissingModelException } from "./lib/exceptions";
 import { Model, ModelType } from "./models/model";
-import { ChatCompletetionInvocationOptions } from "./models/model-adapter";
+import { ChatCompletetionInvocationOptions, IModelAdapter } from "./models/model-adapter";
 import { Registerable } from "./registerable/registerable.interface";
 import { Tool } from "./tools/tools";
 
@@ -17,10 +15,11 @@ export type EasyRAGOptions = {
   tools?: any[];
   docStores?: any[];
   conversation?: ConversationOptions;
+  modelAdapter: IModelAdapter
 }
 
 export class EasyRAG {
-  private adapter: IInferenceAdapter;
+  private options: EasyRAGOptions;
 
   // TODO: Replace any with the appropriate class
   private models: Model[] = [];
@@ -33,8 +32,8 @@ export class EasyRAG {
 
   conversation: Conversation;
 
-  constructor(adapter: IInferenceAdapter, options?: EasyRAGOptions) {
-    this.adapter = adapter;
+  constructor(options: EasyRAGOptions) {
+    this.options = options;
     this.conversation = new Conversation(options?.conversation);
   }
 
@@ -55,7 +54,7 @@ export class EasyRAG {
       content: prompt
     });
 
-    let response = await this.adapter.modelAdapter.chatCompletion(invokeOptions);
+    let response = await this.options.modelAdapter.chatCompletion(invokeOptions);
 
     console.log(response);
     let message = ((response.choices && response.choices[0].message) || response.message);
@@ -70,7 +69,7 @@ export class EasyRAG {
   public async embedding(input: string | Array<string | number>) {
     const model = this.getModel('embedding');
 
-    return await this.adapter.modelAdapter.embedding(model, input);
+    return await this.options.modelAdapter.embedding(model, input);
   }
 
   getTools() {
@@ -88,7 +87,7 @@ export class EasyRAG {
   }
 
   getAdapter() {
-    return this.adapter;
+    return this.options;
   }
 
   getModel(type: ModelType, name?: string) {

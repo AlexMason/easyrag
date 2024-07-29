@@ -1,4 +1,4 @@
-import { OpenAIModelAdapter } from "./adapters/openai.model.adapter";
+import { OpenAIModelAdapter } from "./models/openai.model.adapter";
 import { Conversation } from "./conversation/conversation";
 import { EasyRAG } from "./easyrag";
 import { Model } from "./models/model";
