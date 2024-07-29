@@ -1,6 +1,6 @@
 import { AssistantMessage, ToolMessage } from "../conversation/conversation";
 import { EasyRAG } from "../easyrag";
-import { MissingClientException } from "../lib/exceptions";
+import { MissingClientException } from "../util/exceptions";
 import { Model, ModelOptions } from "./model";
 import { ChatCompletetionInvocationOptions, IModelAdapter, ModelAdapterOptions } from "./model-adapter";
 import { Tool } from "../tools/tools";

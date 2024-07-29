@@ -3,7 +3,7 @@
 
 // export options for controlling easy rag.
 import { Conversation, ConversationOptions, SystemMessage } from "./conversation/conversation";
-import { MissingModelException } from "./lib/exceptions";
+import { MissingModelException } from "./util/exceptions";
 import { Model, ModelType } from "./models/model";
 import { ChatCompletetionInvocationOptions, IModelAdapter } from "./models/model-adapter";
 import { Registerable } from "./registerable/registerable.interface";

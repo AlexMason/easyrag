@@ -1,5 +1,5 @@
 import { EasyRAG } from "../easyrag";
-import { MissingClientException } from "../lib/exceptions";
+import { MissingClientException } from "../util/exceptions";
 import { Registerable } from "../registerable/registerable.interface";
 
 export type ToolParameter = {
