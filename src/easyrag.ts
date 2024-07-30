@@ -6,7 +6,7 @@ import { Conversation, ConversationOptions, SystemMessage } from "./conversation
 import { MissingModelException } from "./util/exceptions";
 import { Model, ModelType } from "./models/model";
 import { ChatCompletetionInvocationOptions, EmbeddingInvocationOptions, IModelAdapter } from "./models/model-adapter";
-import { Registerable } from "./registerable/registerable.interface";
+import { ClientRegisterable } from "./registerable/registerable.interface";
 import { Tool } from "./tools/tools";
 
 // default models, tools,
@@ -70,10 +70,6 @@ export class EasyRAG {
     return await this.options.defaultModelAdapter.embedding(input, modelAdapter.getModel('embedding'), { ...options });
   }
 
-  getTools() {
-    return this.tools;
-  }
-
   getTool(toolName: string) {
     let foundTool = this.tools.find(t => t.name === toolName);
 
@@ -84,11 +80,7 @@ export class EasyRAG {
     return foundTool;
   }
 
-  getAdapter() {
-    return this.options;
-  }
-
-  public register(resource: Registerable): void {
+  public register(resource: ClientRegisterable): void {
     resource.register(this);
 
     if (resource.type === 'tool') {
@@ -98,7 +90,7 @@ export class EasyRAG {
     }
   }
 
-  public unregister(resource: Registerable): void {
+  public unregister(resource: ClientRegisterable): void {
     // Call unregister to clean up / close the resource
     resource.unregister();
 

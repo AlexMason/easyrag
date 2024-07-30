@@ -42,7 +42,6 @@ export type ConversationOptions = {
 
 export class Conversation {
   private options?: ConversationOptions;
-  toolNotepad: string = '';
 
   messages: ChatMessage[] = [];
 

@@ -1,6 +1,6 @@
 import { EasyRAG } from "../easyrag";
 import { MissingClientException } from "../util/exceptions";
-import { Registerable } from "../registerable/registerable.interface";
+import { ClientRegisterable } from "../registerable/registerable.interface";
 
 export type ToolParameter = {
   name: string;
@@ -11,7 +11,7 @@ export type ToolParameter = {
 };
 
 
-export class Tool extends Registerable {
+export class Tool extends ClientRegisterable {
   name: string;
   description: string;
   client: EasyRAG | undefined;

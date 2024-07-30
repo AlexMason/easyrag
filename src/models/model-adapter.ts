@@ -8,7 +8,6 @@ export type ModelAdapterOptions = {
 
 export type ChatCompletetionInvocationOptions = {
   history: {
-    // reset?: boolean,
     conversation: Conversation,
   },
   tools: Tool[],

@@ -1,7 +1,7 @@
 import { Conversation } from "../conversation/conversation";
 import { EasyRAG } from "../easyrag";
 import { MissingClientException } from "../util/exceptions";
-import { Registerable } from "../registerable/registerable.interface";
+import { ClientRegisterable } from "../registerable/registerable.interface";
 import { ChatCompletetionInvocationOptions } from "./model-adapter";
 
 export type ModelOptions = {
