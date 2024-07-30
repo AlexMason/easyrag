@@ -14,12 +14,12 @@ export type ModelOptions = {
 
 export type ModelType = 'chat' | 'embedding' | 'tool';
 
-export class Model extends Registerable {
+export class Model {
 
   /** @internal */
   public type: 'model' = 'model';
   /** @internal */
-  client: EasyRAG | undefined;
+  client: EasyRAG;
   /** @internal */
   options: ModelOptions;
   /** @internal */
@@ -28,21 +28,11 @@ export class Model extends Registerable {
   name: string;
   description?: string | undefined;
 
-  constructor(name: string, modelType: ModelType, options: ModelOptions = {}) {
-    super();
-
+  constructor(name: string, modelType: ModelType, client: EasyRAG, options: ModelOptions = {}) {
     this.name = name;
     this.modelType = modelType;
+    this.client = client;
 
     this.options = options;
-  }
-  /** @internal */
-  register(client: EasyRAG): void {
-    this.client = client;
-  }
-
-  /** @internal */
-  unregister(): void {
-    this.client = undefined;
   }
 }

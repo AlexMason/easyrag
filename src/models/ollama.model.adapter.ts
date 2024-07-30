@@ -2,7 +2,7 @@ import { AssistantMessage, SystemMessage, ToolCall, ToolMessage } from "../conve
 import { EasyRAG } from "../easyrag";
 import { MissingClientException } from "../util/exceptions";
 import { Model, ModelOptions } from "./model";
-import { ChatCompletetionInvocationOptions, IModelAdapter, ModelAdapterOptions } from "./model-adapter"
+import { ChatCompletetionInvocationOptions, EmbeddingInvocationOptions, IModelAdapter, ModelAdapterOptions } from "./model-adapter"
 import { Tool, ToolParameter } from "../tools/tools";
 import { validate } from 'jsonschema';
 
@@ -29,27 +29,26 @@ interface OllamaToolCall {
   type: 'function',
   function: {
     name: string,
-    arguments: string,
+    arguments: Record<string, any>,
   }
 };
 
 export class OllamaModelAdapter extends IModelAdapter {
   baseUrl: string;
 
-  constructor(options?: OllamaModelAdapterOptions) {
-    super(options || {});
+  constructor(options: OllamaModelAdapterOptions) {
+    super(options);
 
     this.baseUrl = (options && options.baseUrl) || "http://localhost:11434";
   }
 
-  async embedding(model: Model, input: string | Array<string | number>): Promise<number[]> {
-
+  async embedding(input: string, model: Model, options: EmbeddingInvocationOptions): Promise<number[] | number[][]> {
     let embeddingResult = await this._embedding(model, input);
 
     return embeddingResult.embeddings[0].embedding as number[];
   }
 
-  async _embedding(model: Model, input: string | Array<string | number>) {
+  async _embedding(model: Model, input: string | Array<string>) {
     if (!model.client) {
       throw new MissingClientException(model);
     }
@@ -76,6 +75,8 @@ export class OllamaModelAdapter extends IModelAdapter {
 
   async chatCompletion(options: ChatCompletetionInvocationOptions): Promise<Record<string, any>> {
     let completion = await this._fetchOllamaChatAPI(options);
+
+    console.log(completion, options)
 
     if (completion.message === undefined) {
       throw new Error('This shouldn\'t happen, probably need to setup error handling logic in the API call');
@@ -118,8 +119,8 @@ export class OllamaModelAdapter extends IModelAdapter {
 
         return {
           message: {
-            role: 'assitant',
-            content: (toolCall.function.arguments as any).response
+            role: 'assistant',
+            content: JSON.parse(toolCall.function.arguments).response
           }
         };
       }
@@ -136,7 +137,13 @@ export class OllamaModelAdapter extends IModelAdapter {
     const fetch_url = `${this.baseUrl}/api/chat`;
     let body_options: any = {};
 
-    let messages = structuredClone(options.history.conversation.getMessages());
+    let messages = structuredClone(options.history.conversation.getMessages()).map(m => {
+      if (m.role === 'assistant' && m.tool_calls) m.tool_calls = m.tool_calls.map(tc => {
+        tc.function.arguments = JSON.parse(tc.function.arguments)
+        return tc;
+      })
+      return m;
+    });
 
     if (options.tools.length > 0) {
       body_options['format'] = "json";
@@ -145,7 +152,7 @@ export class OllamaModelAdapter extends IModelAdapter {
         responseToolDef
       ];
 
-      let sysTemplate: SystemMessage = messages.find(v => v.role === "system") as SystemMessage;
+      let sysTemplate: SystemMessage = messages.find(v => v.role === "system") as unknown as SystemMessage;
       sysTemplate.content = sysTemplate.content + '\n' + this.getToolPrompt(options.tools);
     }
 
@@ -160,6 +167,8 @@ export class OllamaModelAdapter extends IModelAdapter {
       method: "POST",
       body: JSON.stringify(fetch_body)
     }
+
+    console.log(fetch_body)
 
     let fetch_res = await fetch(fetch_url, fetch_options);
     let fetch_json = await fetch_res.json();
@@ -220,7 +229,8 @@ export class OllamaModelAdapter extends IModelAdapter {
         id: `tool_${this.generateToolID()}`,
         function: {
           ...tc.function,
-          name: tc.function.name.replace(/[^a-zA-Z0-9_-]/g, '')
+          name: tc.function.name.replace(/[^a-zA-Z0-9_-]/g, ''),
+          arguments: JSON.stringify(tc.function.arguments)
         }
       }
     });

@@ -5,30 +5,27 @@
 import { Conversation, ConversationOptions, SystemMessage } from "./conversation/conversation";
 import { MissingModelException } from "./util/exceptions";
 import { Model, ModelType } from "./models/model";
-import { ChatCompletetionInvocationOptions, IModelAdapter } from "./models/model-adapter";
+import { ChatCompletetionInvocationOptions, EmbeddingInvocationOptions, IModelAdapter } from "./models/model-adapter";
 import { Registerable } from "./registerable/registerable.interface";
 import { Tool } from "./tools/tools";
 
 // default models, tools,
 export type EasyRAGOptions = {
-  models?: any[];
   tools?: any[];
   docStores?: any[];
   conversation?: ConversationOptions;
-  modelAdapter: IModelAdapter
+  defaultModelAdapter: IModelAdapter
+  context?: EasyRAGContext
 }
+
+export type EasyRAGContext = Record<string, string | number | boolean>;
 
 export class EasyRAG {
   private options: EasyRAGOptions;
 
   // TODO: Replace any with the appropriate class
-  private models: Model[] = [];
   private tools: Tool[] = [];
   private docStores: any[] = [];
-
-  // Should I create a custom context class? 
-  // Would it just be better to serialize with JSON/deserialize
-  private context: any;
 
   conversation: Conversation;
 
@@ -37,10 +34,12 @@ export class EasyRAG {
     this.conversation = new Conversation(options?.conversation);
   }
 
-  public async query(prompt: string, options?: Partial<ChatCompletetionInvocationOptions>): Promise<string> {
+  public async query(prompt: string, options?: Partial<ChatCompletetionInvocationOptions & { modelAdapter: IModelAdapter }>): Promise<string> {
+    const modelAdapter = options?.modelAdapter || this.options.defaultModelAdapter;
+
     const invokeOptions = {
       ...options,
-      model: options?.model || this.getModel('chat'),
+      model: modelAdapter.getModel('chat'),
       history: {
         ...options?.history,
         conversation: options?.history?.conversation || this.conversation
@@ -54,9 +53,8 @@ export class EasyRAG {
       content: prompt
     });
 
-    let response = await this.options.modelAdapter.chatCompletion(invokeOptions);
+    let response = await modelAdapter.chatCompletion(invokeOptions);
 
-    console.log(response);
     let message = ((response.choices && response.choices[0].message) || response.message);
 
     invokeOptions.history.conversation.addMessage({
@@ -66,10 +64,10 @@ export class EasyRAG {
     return message.content;
   }
 
-  public async embedding(input: string | Array<string | number>) {
-    const model = this.getModel('embedding');
+  public async embedding(input: string | Array<string>, options?: Partial<EmbeddingInvocationOptions>) {
+    const modelAdapter = options?.modelAdapter || this.options.defaultModelAdapter;
 
-    return await this.options.modelAdapter.embedding(model, input);
+    return await this.options.defaultModelAdapter.embedding(input, modelAdapter.getModel('embedding'), { ...options });
   }
 
   getTools() {
@@ -90,16 +88,6 @@ export class EasyRAG {
     return this.options;
   }
 
-  getModel(type: ModelType, name?: string) {
-    const model = this.models.find(m => (name === undefined) ? m.modelType === type : m.name === name);
-
-    if (model === undefined) {
-      throw new MissingModelException(type);
-    }
-
-    return model;
-  }
-
   public register(resource: Registerable): void {
     resource.register(this);
 
@@ -107,8 +95,6 @@ export class EasyRAG {
       this.tools.push(resource as Tool);
     } else if (resource.type === 'docstore') {
       this.docStores.push(resource)
-    } else if (resource.type === 'model') {
-      this.models.push(resource as Model);
     }
   }
 
@@ -120,8 +106,6 @@ export class EasyRAG {
       this.tools.splice(this.tools.indexOf(resource as Tool), 1);
     } else if (resource.type === 'docstore') {
       this.docStores.splice(this.docStores.indexOf(resource), 1);
-    } else if (resource.type === 'model') {
-      this.models.splice(this.models.indexOf(resource as Model), 1);
     }
   }
 

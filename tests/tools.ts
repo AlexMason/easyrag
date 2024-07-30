@@ -8,18 +8,36 @@ import "dotenv/config";
 
 (async function () {
   // 1. Initalize the adapters, models, and tools for this client
-  const modelAdapter = new OllamaModelAdapter({
-    // apiKey: process.env.OPENAI_API_KEY || "",
+  const openaiAdapter = new OpenAIModelAdapter({
+    apiKey: process.env.OPENAI_API_KEY || "",
   });
-  // const modelAdapter = new OpenAIModelAdapter({
-  //   apiKey: process.env.OPENAI_API_KEY || "",
-  // });
 
-  const myModel = new Model("llama3-groq-tool-use", "chat", {
-    temperature: 0.2,
-    // topP: 0.65
+  const ollamaAdapter = new OllamaModelAdapter({
+    baseUrl: "http://localhost:11434",
   });
-  // const myModel = new Model("gpt-3.5-turbo", "chat");
+
+  // 2. Initialize the client
+  const ragClient = new EasyRAG({
+    defaultModelAdapter: openaiAdapter,
+    conversation: {
+      defaultMessages: [
+        { role: 'system', content: 'You are an AI assistant.' }
+      ]
+    },
+  });
+
+  // 3. Initalize the models and register them
+  openaiAdapter.registerModels([
+    new Model('gpt-4o-mini', 'chat', ragClient),
+    new Model('text-embedding-3-small', 'embedding', ragClient)
+  ]);
+
+  ollamaAdapter.registerModels([
+    new Model('llama3.1', 'chat', ragClient),
+    new Model('nomic-embed-text', 'embedding', ragClient)
+  ])
+
+  // 4. Initialize the tools
 
   const weatherTool = new Tool(
     "weather", "Looks up the weather by zip code", [
@@ -41,33 +59,33 @@ import "dotenv/config";
       return "Bird watching, take out trash, paint the garage";
     }
   )
-
-  // 2. Initialize the client
-  const ragClient = new EasyRAG({
-    modelAdapter,
-    conversation: {
-      defaultMessages: [
-        { role: 'system', content: 'You are an AI assistant.' }
-      ]
-    },
-  });
-
-  // 3. Initialize the models
-  ragClient.register(myModel);
   ragClient.register(weatherTool);
   ragClient.register(scheduleTool);
-
-  // 4. Query the client
-  // await ragClient.query("What is the weather in zip 92021 and what is on my schedule today?");
-
-  // Only has access to the weather tool
-  // await ragClient.query("What is the weather in zip 92021 and what is on my schedule today?", {
-  //   tools: [weatherTool]
-  // });
 
   // Only has access to the schedule tool
   let message = await ragClient.query("What is the weather in zip 92021 and what is on my schedule today?", {
     tools: [scheduleTool]
+  });
+  console.log(
+    ragClient
+      .conversation
+      .getMessages()
+      .map(m => `${JSON.stringify(m, null, 2)}`)
+      .join('\n')
+  )
+
+  // 5. Get the conversation history
+  // console.log(
+  //   ragClient
+  //     .conversation
+  //     .getMessages()
+  //     .map(m => `${JSON.stringify(m, null, 2)}`)
+  //     .join('\n')
+  // )
+
+  let message2 = await ragClient.query("What is the weather in zip 92021 and what is on my schedule today?", {
+    tools: [scheduleTool],
+    modelAdapter: ollamaAdapter
   });
 
   // 5. Get the conversation history
@@ -79,6 +97,7 @@ import "dotenv/config";
       .join('\n')
   )
 
-  console.log("message", message);
+  // console.log("message", message);
+  // console.log("message2", message2);
 
 })();

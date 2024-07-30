@@ -2,7 +2,7 @@ import { AssistantMessage, ToolMessage } from "../conversation/conversation";
 import { EasyRAG } from "../easyrag";
 import { MissingClientException } from "../util/exceptions";
 import { Model, ModelOptions } from "./model";
-import { ChatCompletetionInvocationOptions, IModelAdapter, ModelAdapterOptions } from "./model-adapter";
+import { ChatCompletetionInvocationOptions, EmbeddingInvocationOptions, IModelAdapter, ModelAdapterOptions } from "./model-adapter";
 import { Tool } from "../tools/tools";
 
 export type OpenAIModelAdapterOptions = {
@@ -32,6 +32,8 @@ export class OpenAIModelAdapter extends IModelAdapter {
 
   async chatCompletion(options: ChatCompletetionInvocationOptions): Promise<any> {
     let chatResult = await this._chatCompletion(options);
+
+    // console.log(chatResult, options)
 
     if (typeof chatResult.choices[0].message.content === "string") {
       return chatResult;
@@ -65,7 +67,7 @@ export class OpenAIModelAdapter extends IModelAdapter {
 
   }
 
-  async embedding(model: Model, input: string | Array<string | number>): Promise<number[]> {
+  async embedding(input: string, model: Model, options: EmbeddingInvocationOptions): Promise<number[]> {
 
     let embeddingResult = await this._embedding(model, input);
 
