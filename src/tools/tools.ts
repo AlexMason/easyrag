@@ -10,25 +10,49 @@ export type ToolParameter = {
   required?: boolean;
 };
 
+export type ToolCallbackFunction = (
+  parameters: Record<string, any>,
+  client: EasyRAG
+) => Promise<string>
+
+export type ToolOptions = {
+  name: string,
+  description: string,
+  parameters?: Record<string, {
+    description: string;
+    type: "string" | "integer" | "boolean";
+    enum?: string[];
+    required?: boolean;
+  }>
+  callback: ToolCallbackFunction
+}
+
 
 export class Tool extends ClientRegisterable {
   name: string;
   description: string;
   client: EasyRAG | undefined;
   type: "tool" = "tool";
+  parameters: ToolParameter[] = [];
+  cb: ToolCallbackFunction;
 
   constructor(
-    name: string,
-    description: string,
-    private parameters: ToolParameter[],
-    private cb: (
-      parameters: Record<string, any>,
-      client: EasyRAG
-    ) => Promise<string>
+    options: ToolOptions
   ) {
     super();
-    this.name = name;
-    this.description = description;
+
+    this.name = options.name;
+    this.description = options.description;
+    this.cb = options.callback;
+
+    if (options.parameters) {
+      this.parameters = Object.entries(options.parameters).map(([keyName, value]) => {
+        return {
+          name: keyName,
+          ...value
+        }
+      });
+    }
   }
 
   getParameters(): ToolParameter[] {

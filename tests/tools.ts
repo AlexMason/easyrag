@@ -39,33 +39,38 @@ import "dotenv/config";
 
   // 4. Initialize the tools
 
-  const weatherTool = new Tool(
-    "weather", "Looks up the weather by zip code", [
-    {
-      "name": "zipCode",
-      "description": "Zip code",
-      "type": "string",
-      "required": true
-    }
-  ],
-    (params) => {
-      return Promise.resolve("It's a crisp 30f in " + params.zipCode);
-    }
-  )
 
-  const scheduleTool = new Tool(
-    "schedule", "Looks up items on my daily planner", [],
-    async () => {
-      return "Bird watching, take out trash, paint the garage";
+  const weatherTool = new Tool({
+    "name": "weather",
+    "description": "Looks up the weather by zip code",
+    "parameters": {
+      "zipCode": {
+        "type": "string",
+        "description": "Zip code that the user provided",
+        "required": true
+      }
+    },
+    "callback": async (params) => {
+      return "It's a crisp 30f in " + params.zipCode;
     }
-  )
+  });
+
+  const scheduleTool = new Tool({
+    "name": "schedule",
+    "description": "Looks up the users schedule",
+    "callback": async (params) => {
+      return "It's time to paint the garage.";
+    }
+  });
+
   ragClient.register(weatherTool);
   ragClient.register(scheduleTool);
 
   // Only has access to the schedule tool
   let message = await ragClient.query("What is the weather in zip 92021 and what is on my schedule today?", {
-    tools: [scheduleTool]
+    tools: [weatherTool]
   });
+
   console.log(
     ragClient
       .conversation
@@ -83,19 +88,19 @@ import "dotenv/config";
   //     .join('\n')
   // )
 
-  let message2 = await ragClient.query("What is the weather in zip 92021 and what is on my schedule today?", {
-    tools: [scheduleTool],
-    modelAdapter: ollamaAdapter
-  });
+  // let message2 = await ragClient.query("What is the weather in zip 92021 and what is on my schedule today?", {
+  //   tools: [scheduleTool],
+  //   modelAdapter: ollamaAdapter
+  // });
 
-  // 5. Get the conversation history
-  console.log(
-    ragClient
-      .conversation
-      .getMessages()
-      .map(m => `${JSON.stringify(m, null, 2)}`)
-      .join('\n')
-  )
+  // // 5. Get the conversation history
+  // console.log(
+  //   ragClient
+  //     .conversation
+  //     .getMessages()
+  //     .map(m => `${JSON.stringify(m, null, 2)}`)
+  //     .join('\n')
+  // )
 
   // console.log("message", message);
   // console.log("message2", message2);

@@ -58,7 +58,7 @@ export class OpenAIModelAdapter extends IModelAdapter {
     options.history.conversation.addMessage(toolRunMessage);
 
     for (let toolCall of toolCalls) {
-      const toolResultMessage = await this.getToolResult(toolCall, options.client);
+      const toolResultMessage = await this.getToolResult(options.tools, toolCall, options.client);
 
       options.history.conversation.addMessage(toolResultMessage);
     }
@@ -100,7 +100,7 @@ export class OpenAIModelAdapter extends IModelAdapter {
     return result;
   }
 
-  private async getToolResult(toolCall: OpenAIToolCall, client: EasyRAG) {
+  private async getToolResult(tools: Tool[], toolCall: OpenAIToolCall, client: EasyRAG) {
     let toolCallArgs = JSON.parse(toolCall.function.arguments);
 
     let toolResultMessage: ToolMessage = {
@@ -110,8 +110,8 @@ export class OpenAIModelAdapter extends IModelAdapter {
     }
 
     try {
-      let foundTool = client.getTool(toolCall.function.name);
-      const toolResult = await foundTool.run(toolCallArgs);
+      let foundTool = tools.find(t => t.name === toolCall.function.name);
+      const toolResult = await foundTool!.run(toolCallArgs);
       toolResultMessage.content = toolResult;
     } catch (error) {
       toolResultMessage.content = `Tool "${toolCall.function.name}" not found.`;
@@ -129,6 +129,7 @@ export class OpenAIModelAdapter extends IModelAdapter {
     let fetchOptions: any = {};
 
     if (options.tools && options.tools.length > 0) {
+      console.log(options.tools)
       fetchOptions.tools = this.parseTools(options.tools);
     }
 
@@ -158,6 +159,7 @@ export class OpenAIModelAdapter extends IModelAdapter {
   private parseTools(tools: Tool[]) {
     let formattedTools = tools.map(tool => {
       let toolProps = tool.getParameters().reduce((a: any, param) => {
+        console.log(param)
         a[param.name] = {
           "type": param.type,
           "description": param.description,
@@ -169,6 +171,8 @@ export class OpenAIModelAdapter extends IModelAdapter {
 
         return a;
       }, {})
+
+      console.log("tool.getParameters()", tool.getParameters())
 
       let requiredTools = tool.getParameters().reduce((a: any, param) => {
         if (param.required) {

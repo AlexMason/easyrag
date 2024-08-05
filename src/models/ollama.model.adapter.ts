@@ -125,7 +125,7 @@ export class OllamaModelAdapter extends IModelAdapter {
         };
       }
 
-      const toolResultMessage = await this.getToolResult(toolCall, options.client);
+      const toolResultMessage = await this.getToolResult(options.tools, toolCall, options.client);
 
       options.history.conversation.addMessage(toolResultMessage);
     }
@@ -176,7 +176,7 @@ export class OllamaModelAdapter extends IModelAdapter {
     return fetch_json;
   }
 
-  private async getToolResult(toolCall: ToolCall, client: EasyRAG) {
+  private async getToolResult(tools: Tool[], toolCall: ToolCall, client: EasyRAG) {
     // cast to tool parameter
     let toolCallArgs = toolCall.function.arguments as unknown as ToolParameter[];
 
@@ -187,8 +187,8 @@ export class OllamaModelAdapter extends IModelAdapter {
     }
 
     try {
-      let foundTool = client.getTool(toolCall.function.name);
-      const toolResult = await foundTool.run(toolCallArgs);
+      let foundTool = tools.find(t => t.name === toolCall.function.name)
+      const toolResult = await foundTool!.run(toolCallArgs);
       toolResultMessage.content = toolResult;
     } catch (error) {
       toolResultMessage.content = `Tool "${toolCall.function.name}" not found.`;
